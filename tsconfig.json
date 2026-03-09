@@ -1,0 +1,20 @@
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "types": ["jest"],
+    "strict": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@centerhit-app/*": ["src/app/*"],
+      "@centerhit-components/*": ["src/components/*"],
+      "@centerhit-core/*": ["src/core/*"],
+      "@centerhit-features/*": ["src/features/*"],
+      "@centerhit-game/*": ["src/game/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["**/node_modules", "**/Pods", "CenterHit/**"]
+}
