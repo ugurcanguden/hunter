@@ -9,7 +9,6 @@ import { CoreText } from '@centerhit-components/common/CoreText';
 import { GameOverModal } from '@centerhit-components/game/GameOverModal';
 import { GameOverlayMessage } from '@centerhit-components/game/GameOverlayMessage';
 import { GameTopBar } from '@centerhit-components/game/GameTopBar';
-import { HudStatCard } from '@centerhit-components/game/HudStatCard';
 import { LevelCompleteModal } from '@centerhit-components/game/LevelCompleteModal';
 import { PauseModal } from '@centerhit-components/game/PauseModal';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
@@ -45,6 +44,10 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
   const objectiveSummary = useMemo(
     () => buildObjectiveSummary(session),
     [session],
+  );
+  const remainingMistakes = Math.max(
+    safeLevel.objective.maxMissAllowed - session.misses,
+    0,
   );
   const scoreProgress = useMemo(
     () => getNextStarProgress(safeLevel, session.score),
@@ -194,17 +197,114 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
         }}
       />
 
-      <View style={styles.hudRow}>
-        <HudStatCard
-          label={t.common.score}
-          value={session.score}
-          subtitle={scoreSubtitle}
-        />
-        <HudStatCard
-          label={t.common.hits}
-          value={`${session.hits}/${safeLevel.objective.requiredHits}`}
-        />
-        <HudStatCard label={t.common.perfect} value={session.perfectHits} />
+      <View style={styles.headerSummary}>
+        <CoreCard variant="soft" style={styles.objectiveStrip}>
+          <View style={styles.scoreRow}>
+            <View
+              style={[
+                styles.objectiveIcon,
+                styles.scoreIcon,
+                {
+                  backgroundColor: theme.colors.stageGlow,
+                  borderColor: theme.colors.accentPrimary,
+                },
+              ]}>
+              <CoreText variant="caption" style={{ color: theme.colors.accentPrimary }}>
+                S
+              </CoreText>
+            </View>
+            <View style={styles.objectiveTextWrap}>
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.common.score}
+              </CoreText>
+              <CoreText variant="subtitle">{session.score}</CoreText>
+              <CoreText variant="caption" colorRole="textSecondary" style={styles.objectiveMeta}>
+                {scoreSubtitle}
+              </CoreText>
+            </View>
+            <View style={styles.livesWrap}>
+              <CoreText variant="caption" colorRole="textSecondary" style={styles.livesLabel}>
+                {t.game.mistakesLeft}
+              </CoreText>
+              <View style={styles.livesRow}>
+                {Array.from({ length: safeLevel.objective.maxMissAllowed }, (_, index) => {
+                  const isActive = index < remainingMistakes;
+
+                  return (
+                    <View
+                      key={`life-${index}`}
+                      style={[
+                        styles.lifeChip,
+                        {
+                          backgroundColor: isActive
+                            ? theme.colors.danger
+                            : theme.colors.surfaceSoft,
+                          borderColor: isActive
+                            ? theme.colors.danger
+                            : theme.colors.borderSoft,
+                          opacity: isActive ? 1 : 0.32,
+                        },
+                      ]}>
+                      <CoreText
+                        variant="caption"
+                        style={{
+                          color: isActive
+                            ? theme.colors.textPrimary
+                            : theme.colors.textSecondary,
+                        }}>
+                        ♥
+                      </CoreText>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.statsRow}>
+            <View
+              style={[
+                styles.statPill,
+                {
+                  backgroundColor: theme.colors.stageGlow,
+                  borderColor: theme.colors.borderSoft,
+                },
+              ]}>
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.common.hits}
+              </CoreText>
+              <CoreText variant="bodyStrong">{objectiveSummary.hits}</CoreText>
+            </View>
+
+            <View
+              style={[
+                styles.statPill,
+                {
+                  backgroundColor: theme.colors.surfaceSoft,
+                  borderColor: theme.colors.perfectHit,
+                },
+              ]}>
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.common.perfect}
+              </CoreText>
+              <CoreText variant="bodyStrong">{objectiveSummary.perfectHits}</CoreText>
+            </View>
+
+            <View
+              style={[
+                styles.statPill,
+                {
+                  backgroundColor: theme.colors.overlay,
+                  borderColor: theme.colors.accentSecondary,
+                },
+              ]}>
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.common.shots}
+              </CoreText>
+              <CoreText variant="bodyStrong">{objectiveSummary.shots}</CoreText>
+            </View>
+          </View>
+        </CoreCard>
       </View>
 
       <View style={styles.gameArea}>
@@ -450,88 +550,6 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
           />
         ) : null}
       </View>
-
-      <View style={styles.objectiveInfo}>
-        <CoreText variant="caption" colorRole="textSecondary" style={styles.objectiveLabel}>
-          {t.game.objectiveLabel}
-        </CoreText>
-        <CoreCard variant="soft" style={styles.objectiveStrip}>
-          <View style={styles.objectiveGrid}>
-            <View style={styles.objectiveItem}>
-              <View
-                style={[
-                  styles.objectiveIcon,
-                  { backgroundColor: theme.colors.stageGlow, borderColor: theme.colors.accentPrimary },
-                ]}>
-                <CoreText variant="caption" style={{ color: theme.colors.accentPrimary }}>
-                  H
-                </CoreText>
-              </View>
-              <View style={styles.objectiveTextWrap}>
-                <CoreText variant="caption" colorRole="textSecondary">
-                  {t.common.hits}
-                </CoreText>
-                <CoreText variant="bodyStrong">{objectiveSummary.hits}</CoreText>
-              </View>
-            </View>
-
-            <View style={styles.objectiveItem}>
-              <View
-                style={[
-                  styles.objectiveIcon,
-                  { backgroundColor: theme.colors.stageGlow, borderColor: theme.colors.perfectHit },
-                ]}>
-                <CoreText variant="caption" style={{ color: theme.colors.perfectHit }}>
-                  P
-                </CoreText>
-              </View>
-              <View style={styles.objectiveTextWrap}>
-                <CoreText variant="caption" colorRole="textSecondary">
-                  {t.common.perfect}
-                </CoreText>
-                <CoreText variant="bodyStrong">{objectiveSummary.perfectHits}</CoreText>
-              </View>
-            </View>
-
-            <View style={styles.objectiveItem}>
-              <View
-                style={[
-                  styles.objectiveIcon,
-                  { backgroundColor: theme.colors.overlay, borderColor: theme.colors.missHit },
-                ]}>
-                <CoreText variant="caption" style={{ color: theme.colors.missHit }}>
-                  M
-                </CoreText>
-              </View>
-              <View style={styles.objectiveTextWrap}>
-                <CoreText variant="caption" colorRole="textSecondary">
-                  {t.game.mistakesLeft}
-                </CoreText>
-                <CoreText variant="bodyStrong">{objectiveSummary.mistakes}</CoreText>
-              </View>
-            </View>
-
-            <View style={styles.objectiveItem}>
-              <View
-                style={[
-                  styles.objectiveIcon,
-                  { backgroundColor: theme.colors.overlay, borderColor: theme.colors.accentSecondary },
-                ]}>
-                <CoreText variant="caption" style={{ color: theme.colors.accentSecondary }}>
-                  S
-                </CoreText>
-              </View>
-              <View style={styles.objectiveTextWrap}>
-                <CoreText variant="caption" colorRole="textSecondary">
-                  {t.common.shots}
-                </CoreText>
-                <CoreText variant="bodyStrong">{objectiveSummary.shots}</CoreText>
-              </View>
-            </View>
-          </View>
-        </CoreCard>
-      </View>
-
       <PauseModal
         visible={pauseVisible}
         onDismiss={() => setPauseVisible(false)}
@@ -587,16 +605,14 @@ const styles = StyleSheet.create({
   container: {
     paddingBottom: 24,
   },
-  hudRow: {
-    flexDirection: 'row',
-    gap: gameDefaults.hudGap,
-    marginBottom: gameDefaults.hudMarginBottom,
+  headerSummary: {
+    marginBottom: 14,
   },
   gameArea: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 6,
     minHeight: gameDefaults.gameAreaMinHeight,
     overflow: 'hidden',
     marginHorizontal: -16,
@@ -734,29 +750,14 @@ const styles = StyleSheet.create({
     height: 5,
     opacity: 0.92,
   },
-  objectiveInfo: {
-    gap: 8,
-    paddingBottom: gameDefaults.objectiveFooterPaddingBottom,
-    paddingHorizontal: 2,
-  },
-  objectiveLabel: {
-    paddingHorizontal: 6,
-  },
   objectiveStrip: {
     borderRadius: 20,
     paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingVertical: 12,
   },
-  objectiveGrid: {
-    columnGap: 12,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    rowGap: 12,
-  },
-  objectiveItem: {
+  scoreRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    minWidth: '47%',
   },
   objectiveIcon: {
     alignItems: 'center',
@@ -767,7 +768,48 @@ const styles = StyleSheet.create({
     marginRight: 10,
     width: 32,
   },
+  scoreIcon: {
+    height: 36,
+    width: 36,
+  },
   objectiveTextWrap: {
     flex: 1,
+  },
+  objectiveMeta: {
+    marginTop: 2,
+  },
+  livesWrap: {
+    alignItems: 'flex-end',
+    marginLeft: 12,
+  },
+  livesLabel: {
+    marginBottom: 6,
+  },
+  livesRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  lifeChip: {
+    alignItems: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 24,
+    justifyContent: 'center',
+    width: 24,
+  },
+  statsRow: {
+    columnGap: 10,
+    flexDirection: 'row',
+    marginTop: 12,
+  },
+  statPill: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    flex: 1,
+    minHeight: 62,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 10,
   },
 });
