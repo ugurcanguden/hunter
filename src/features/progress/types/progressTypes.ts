@@ -9,6 +9,7 @@ export type LevelProgressRecord = {
 };
 
 export type ProgressState = {
+  unlockedPackIds: string[];
   unlockedLevelIds: string[];
   levelRecords: Record<string, LevelProgressRecord>;
   bestScore: number;

@@ -51,17 +51,24 @@ export function LevelCard({
           <CoreText variant="caption" colorRole="textSecondary">
             {t.common.level.toUpperCase()} {level.order}
           </CoreText>
-          <CoreText
-            variant="caption"
-            colorRole={!unlocked ? 'warning' : highlighted ? 'accentPrimary' : isCompleted ? 'success' : 'textSecondary'}>
-            {!unlocked
-              ? t.common.locked
-              : highlighted
-                ? t.common.next
-                : isCompleted
-                  ? t.common.open
-                  : t.common.unlocked}
-          </CoreText>
+          <View style={styles.statusRow}>
+            {!unlocked ? (
+              <CoreText variant="caption" colorRole="warning" style={styles.lockIcon}>
+                🔒
+              </CoreText>
+            ) : null}
+            <CoreText
+              variant="caption"
+              colorRole={!unlocked ? 'warning' : highlighted ? 'accentPrimary' : isCompleted ? 'success' : 'textSecondary'}>
+              {!unlocked
+                ? t.common.locked
+                : highlighted
+                  ? t.common.next
+                  : isCompleted
+                    ? t.common.open
+                    : t.common.unlocked}
+            </CoreText>
+          </View>
         </View>
         <CoreText variant="subtitle" style={styles.title} numberOfLines={2}>
           {level.title}
@@ -94,6 +101,14 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  statusRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  lockIcon: {
+    marginTop: -1,
   },
   title: {
     marginBottom: 6,

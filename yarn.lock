@@ -1392,7 +1392,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.25.0":
+"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.25.0":
   version: 7.28.6
   resolution: "@babel/runtime@npm:7.28.6"
   checksum: 42d8a868c2fc2e9a77927945a6daa7ec03c7ea49e611e0d15442933cdabb12f20e3a6849c729259076c10a4247adec229331d1f94c2d0073ea0979d7853e29fd
@@ -1540,6 +1540,13 @@ __metadata:
   version: 2.0.3
   resolution: "@humanwhocodes/object-schema@npm:2.0.3"
   checksum: d3b78f6c5831888c6ecc899df0d03bcc25d46f3ad26a11d7ea52944dc36a35ef543fad965322174238d677a43d5c694434f6607532cff7077062513ad7022631
+  languageName: node
+  linkType: hard
+
+"@iabtcf/core@npm:^1.5.6":
+  version: 1.5.6
+  resolution: "@iabtcf/core@npm:1.5.6"
+  checksum: 561626b626ee476dea5dd3a6ed0ebc26caac2475fc9509583f0e66c92ad67c3a2c2816b3516a4f043904b40607c9a4d44cbacbf09a5897740fd273e057c02c2c
   languageName: node
   linkType: hard
 
@@ -3688,8 +3695,10 @@ __metadata:
     react: 19.2.3
     react-native: 0.84.1
     react-native-gesture-handler: ^2.30.0
+    react-native-google-mobile-ads: ^16.2.2
     react-native-safe-area-context: ^5.5.2
     react-native-screens: ^4.24.0
+    react-native-sound: ^0.13.0
     react-native-sound-player: ^0.14.5
     react-test-renderer: 19.2.3
     typescript: ^5.8.3
@@ -3979,6 +3988,13 @@ __metadata:
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: abbe19c768c97ee2eed6282d8ce3031126662252c58d711f646921c9623f9052e3e1906443066beec1095832f534e57c523b7333f8e7e0d93051ab6baef5ab3a
+  languageName: node
+  linkType: hard
+
+"dequal@npm:^2.0.2":
+  version: 2.0.3
+  resolution: "dequal@npm:2.0.3"
+  checksum: 8679b850e1a3d0ebbc46ee780d5df7b478c23f335887464023a631d1b9af051ad4a6595a44220f9ff8ff95a8ddccf019b5ad778a976fd7bbf77383d36f412f90
   languageName: node
   linkType: hard
 
@@ -7727,6 +7743,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-google-mobile-ads@npm:^16.2.2":
+  version: 16.2.2
+  resolution: "react-native-google-mobile-ads@npm:16.2.2"
+  dependencies:
+    "@iabtcf/core": ^1.5.6
+    use-deep-compare-effect: ^1.8.1
+  peerDependencies:
+    expo: ">=47.0.0"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 48a91478f5109a6a28812e88bb62f861220f0827769beb0c184e52f226083fdc619ed8b1ec1022bb7126f6834a4e924fe9cdabdf3c0b29efffcc228475753d9c
+  languageName: node
+  linkType: hard
+
 "react-native-safe-area-context@npm:^5.5.2":
   version: 5.7.0
   resolution: "react-native-safe-area-context@npm:5.7.0"
@@ -7754,6 +7785,16 @@ __metadata:
   version: 0.14.5
   resolution: "react-native-sound-player@npm:0.14.5"
   checksum: 7f20105a97a1ec8d5eaf3f85653dc375177a9d251bb54178d8f18fc2a387e436579ee08c07e68ddfa21f8cad5f5583f2935d76d1587fd5303168159151396e91
+  languageName: node
+  linkType: hard
+
+"react-native-sound@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "react-native-sound@npm:0.13.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 75e08645103930e914d7c40fd6d580f0f3399fe2493220dbbee974744eef75e877ed05465c2988e8450472e9546d12a4b01ce305337365d013ed39853ae6498a
   languageName: node
   linkType: hard
 
@@ -9000,6 +9041,18 @@ __metadata:
   dependencies:
     punycode: ^2.1.0
   checksum: 7167432de6817fe8e9e0c9684f1d2de2bb688c94388f7569f7dbdb1587c9f4ca2a77962f134ec90be0cc4d004c939ff0d05acc9f34a0db39a3c797dada262633
+  languageName: node
+  linkType: hard
+
+"use-deep-compare-effect@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "use-deep-compare-effect@npm:1.8.1"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+    dequal: ^2.0.2
+  peerDependencies:
+    react: ">=16.13"
+  checksum: 2b9b6291df3f772f44d259b352e5d998963ccee0db2efeb76bb05525d928064aeeb69bb0dee5a5e428fea7cf3db67c097a770ebd30caa080662b565f6ef02b2e
   languageName: node
   linkType: hard
 

@@ -3,6 +3,7 @@ import {
   LevelProgressRecord,
   ProgressState,
 } from '@centerhit-features/progress/types/progressTypes';
+import { CampaignPackDefinition } from '@centerhit-features/campaign/types/campaignTypes';
 
 export function calculateTotalStars(levelRecords: Record<string, LevelProgressRecord>) {
   return Object.values(levelRecords).reduce(
@@ -13,6 +14,29 @@ export function calculateTotalStars(levelRecords: Record<string, LevelProgressRe
 
 export function isLevelUnlocked(progress: ProgressState, levelId: string) {
   return progress.unlockedLevelIds.includes(levelId);
+}
+
+export function isPackUnlocked(progress: ProgressState, packId: string) {
+  return progress.unlockedPackIds.includes(packId);
+}
+
+export function isPackCompleted(
+  progress: ProgressState,
+  pack: CampaignPackDefinition,
+  levels: readonly LevelDefinition[],
+) {
+  if (levels.length === 0) {
+    return false;
+  }
+
+  return levels.every(level => Boolean(progress.levelRecords[level.id]));
+}
+
+export function resolveNextUnlockablePack(
+  progress: ProgressState,
+  packs: readonly CampaignPackDefinition[],
+) {
+  return packs.find(pack => !progress.unlockedPackIds.includes(pack.packId)) ?? null;
 }
 
 export function resolvePlayableLevelId(

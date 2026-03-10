@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 
-import { useSettingsStore } from '@centerhit-features/settings/store/useSettingsStore';
 import { gameFeedbackService } from '@centerhit-game/services/gameFeedbackService';
 import { GameSessionState } from '@centerhit-game/types/gameTypes';
 
@@ -8,7 +7,6 @@ export function useGameFeedbackEffects(session: GameSessionState) {
   const previousShotsRef = useRef(session.shotsFired);
   const previousStatusRef = useRef(session.status);
   const previousFeedbackUntilRef = useRef(session.feedback.until);
-  const previousMusicEnabledRef = useRef<boolean | null>(null);
 
   useEffect(() => {
     if (session.shotsFired > previousShotsRef.current) {
@@ -57,20 +55,4 @@ export function useGameFeedbackEffects(session: GameSessionState) {
 
     previousStatusRef.current = session.status;
   }, [session.status]);
-
-  useEffect(() => {
-    const unsubscribe = useSettingsStore.subscribe(state => {
-      if (previousMusicEnabledRef.current === state.settings.musicEnabled) {
-        return;
-      }
-
-      previousMusicEnabledRef.current = state.settings.musicEnabled;
-      gameFeedbackService.syncMusicPreference();
-    });
-
-    previousMusicEnabledRef.current = useSettingsStore.getState().settings.musicEnabled;
-    gameFeedbackService.syncMusicPreference();
-
-    return unsubscribe;
-  }, []);
 }

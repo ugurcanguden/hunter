@@ -45,11 +45,27 @@ export function getNextStarProgress(level: LevelDefinition, score: number) {
     return {
       targetStars: null,
       remainingScore: 0,
+      progressRatio: 1,
+      previousThresholdScore: level.stars.threeStarScore,
+      targetScore: level.stars.threeStarScore,
     };
   }
+
+  const previousThreshold =
+    thresholds
+      .filter(threshold => threshold.score < nextTarget.score)
+      .slice(-1)[0]?.score ?? 0;
+  const progressSpan = Math.max(nextTarget.score - previousThreshold, 1);
+  const progressRatio = Math.min(
+    Math.max((score - previousThreshold) / progressSpan, 0),
+    1,
+  );
 
   return {
     targetStars: nextTarget.stars,
     remainingScore: nextTarget.score - score,
+    progressRatio,
+    previousThresholdScore: previousThreshold,
+    targetScore: nextTarget.score,
   };
 }

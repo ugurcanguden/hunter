@@ -29,6 +29,10 @@ type TranslationTree = {
     unlocked: string;
     campaign: string;
     next: string;
+    pack: string;
+    completed: string;
+    ready: string;
+    levelsCount: string;
   };
   home: {
     subtitle: string;
@@ -39,19 +43,35 @@ type TranslationTree = {
     campaignProgress: string;
     unlockedLevels: string;
     readyToContinue: string;
+    currentPack: string;
+    nextPack: string;
+    remoteContentHint: string;
   };
   levels: {
     title: string;
     summary: string;
     campaignStatus: string;
     nextPlayable: string;
+    packsUnlocked: string;
+    tapToOpen: string;
+    loadingPack: string;
   };
   settings: {
     title: string;
     subtitle: string;
     progress: string;
     progressCopy: string;
+    campaignTools: string;
+    campaignToolsCopy: string;
     resetProgress: string;
+    clearCampaignCache: string;
+    seedCampaignData: string;
+    seedCampaignDataTitle: string;
+    seedCampaignDataMessage: string;
+    seedCampaignDataSuccess: string;
+    seedCampaignDataError: string;
+    clearCampaignCacheTitle: string;
+    clearCampaignCacheMessage: string;
     resetProgressTitle: string;
     resetProgressMessage: string;
     cancel: string;
@@ -122,6 +142,10 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       unlocked: 'Unlocked',
       campaign: 'Campaign',
       next: 'Next',
+      pack: 'Pack',
+      completed: 'Completed',
+      ready: 'Ready',
+      levelsCount: 'levels',
     },
     home: {
       subtitle: 'Premium casual arcade foundations, ready for gameplay systems.',
@@ -132,19 +156,35 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       campaignProgress: 'Campaign Progress',
       unlockedLevels: 'Unlocked levels',
       readyToContinue: 'Ready to continue',
+      currentPack: 'Current pack',
+      nextPack: 'Next pack',
+      remoteContentHint: 'New packs appear here after the starter circuit is complete.',
     },
     levels: {
       title: 'Levels',
       summary: 'open • {{stars}} stars collected',
       campaignStatus: 'Campaign Status',
       nextPlayable: 'Next playable',
+      packsUnlocked: 'packs unlocked',
+      tapToOpen: 'Tap a pack to open its levels',
+      loadingPack: 'Loading pack...',
     },
     settings: {
       title: 'Settings',
       subtitle: 'Everything is stored on-device. No login, no sync, no cloud profile.',
       progress: 'Progress',
       progressCopy: 'Reset local progress, unlocked levels, stars, and cached best scores.',
+      campaignTools: 'Campaign Tools',
+      campaignToolsCopy: 'Use these actions to seed and refresh remote campaign packs while testing PocketBase.',
       resetProgress: 'Reset Progress',
+      clearCampaignCache: 'Clear Campaign Cache',
+      seedCampaignData: 'Seed Remote Campaign',
+      seedCampaignDataTitle: 'Seed Remote Campaign',
+      seedCampaignDataMessage: 'This inserts sample pack and level data into PocketBase.',
+      seedCampaignDataSuccess: 'Sample campaign data inserted successfully.',
+      seedCampaignDataError: 'PocketBase seed failed.',
+      clearCampaignCacheTitle: 'Clear Campaign Cache',
+      clearCampaignCacheMessage: 'This removes downloaded campaign packs and refetches them on demand.',
       resetProgressTitle: 'Reset Progress',
       resetProgressMessage: 'This clears all local game progress.',
       cancel: 'Cancel',
@@ -213,6 +253,10 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       unlocked: 'Açık',
       campaign: 'Kampanya',
       next: 'Sıradaki',
+      pack: 'Kutu',
+      completed: 'Tamamlandı',
+      ready: 'Hazır',
+      levelsCount: 'bölüm',
     },
     home: {
       subtitle: 'Premium casual arcade temeli, oynanış sistemleri için hazır.',
@@ -223,19 +267,35 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       campaignProgress: 'Kampanya İlerlemesi',
       unlockedLevels: 'Açılan bölümler',
       readyToContinue: 'Devam etmeye hazır',
+      currentPack: 'Mevcut kutu',
+      nextPack: 'Sıradaki kutu',
+      remoteContentHint: 'Başlangıç devresi tamamlanınca yeni kutular burada açılır.',
     },
     levels: {
       title: 'Bölümler',
       summary: 'açık • {{stars}} yıldız toplandı',
       campaignStatus: 'Kampanya Durumu',
       nextPlayable: 'Sıradaki bölüm',
+      packsUnlocked: 'kutu açık',
+      tapToOpen: 'Bölümlerini açmak için bir kutuya dokun',
+      loadingPack: 'Kutu yükleniyor...',
     },
     settings: {
       title: 'Ayarlar',
       subtitle: 'Her şey cihazda tutulur. Giriş yok, senkron yok, bulut profil yok.',
       progress: 'İlerleme',
       progressCopy: 'Yerel ilerlemeyi, açılan bölümleri, yıldızları ve kayıtlı en iyi skorları sıfırla.',
+      campaignTools: 'Kampanya Araçları',
+      campaignToolsCopy: 'PocketBase testleri sırasında remote kampanya paketlerini eklemek ve yenilemek için bu araçları kullan.',
       resetProgress: 'İlerlemeyi Sıfırla',
+      clearCampaignCache: 'Kampanya Cache Temizle',
+      seedCampaignData: 'Remote Kampanya Seed Et',
+      seedCampaignDataTitle: 'Remote Kampanya Seed Et',
+      seedCampaignDataMessage: 'Bu işlem örnek kutu ve bölüm verilerini PocketBase içine ekler.',
+      seedCampaignDataSuccess: 'Örnek kampanya verisi başarıyla eklendi.',
+      seedCampaignDataError: 'PocketBase seed işlemi başarısız oldu.',
+      clearCampaignCacheTitle: 'Kampanya Cache Temizle',
+      clearCampaignCacheMessage: 'İndirilen kampanya paketlerini siler, gerektiğinde yeniden çeker.',
       resetProgressTitle: 'İlerlemeyi Sıfırla',
       resetProgressMessage: 'Bu işlem tüm yerel oyun ilerlemesini temizler.',
       cancel: 'Vazgeç',

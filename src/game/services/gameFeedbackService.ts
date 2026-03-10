@@ -1,4 +1,6 @@
-import { NativeModules, Platform, Vibration } from 'react-native';
+import { Image, NativeModules, Platform, Vibration } from 'react-native';
+import type { EmitterSubscription } from 'react-native';
+import Sound from 'react-native-sound';
 
 import { useSettingsStore } from '@centerhit-features/settings/store/useSettingsStore';
 
@@ -11,14 +13,14 @@ type FeedbackSoundKey =
   | 'level-complete'
   | 'level-fail';
 
-const soundFiles: Record<FeedbackSoundKey, { fileName: string; fileType: string }> = {
-  shoot: { fileName: 'shoot', fileType: 'mp3' },
-  'good-hit': { fileName: 'good-hit', fileType: 'mp3' },
-  'perfect-hit': { fileName: 'perfect-hit', fileType: 'mp3' },
-  miss: { fileName: 'miss', fileType: 'mp3' },
-  blocked: { fileName: 'blocked', fileType: 'mp3' },
-  'level-complete': { fileName: 'level-complete', fileType: 'mp3' },
-  'level-fail': { fileName: 'level-fail', fileType: 'mp3' },
+const soundFiles: Partial<Record<FeedbackSoundKey, number>> = {
+  blocked: require('../../assets/sounds/blocked.wav'),
+  'good-hit': require('../../assets/sounds/good-hit.mp3'),
+  'level-complete': require('../../assets/sounds/level-complete.wav'),
+  'level-fail': require('../../assets/sounds/level-fail.wav'),
+  miss: require('../../assets/sounds/miss.wav'),
+  'perfect-hit': require('../../assets/sounds/perfect-hit.wav'),
+  shoot: require('../../assets/sounds/shoot.wav'),
 };
 
 const hapticPatterns: Record<
@@ -35,9 +37,32 @@ const hapticPatterns: Record<
 };
 
 type SoundPlayerModule = {
+  addEventListener: (
+    eventName: 'FinishedPlaying',
+    callback: (data: { success?: boolean }) => void,
+  ) => EmitterSubscription;
+  pause: () => void;
+  playAsset: (asset: number) => void;
   playSoundFile: (fileName: string, fileType: string) => void;
+  resume: () => void;
+  setMixAudio: (enabled: boolean) => void;
+  setVolume: (volume: number) => void;
   stop: () => void;
 };
+
+const backgroundMusicTracks = [
+  require('../../assets/sounds/background/Neon_Nexus_Pulse.mp3'),
+  require('../../assets/sounds/background/Neon_Overture.mp3'),
+  require('../../assets/sounds/background/Neon_Pulse_Drive.mp3'),
+  require('../../assets/sounds/background/bgm.mp3'),
+] as const;
+const backgroundMusicVolume = 0.38;
+
+let backgroundMusicTrackIndex = 0;
+let backgroundMusicEnabled = false;
+let backgroundMusicPaused = false;
+let backgroundMusicSubscription: EmitterSubscription | null = null;
+const soundEffectCache = new Map<FeedbackSoundKey, Sound | null>();
 
 function canPlaySound() {
   return useSettingsStore.getState().settings.soundEnabled;
@@ -68,18 +93,101 @@ function playSound(key: FeedbackSoundKey) {
     return;
   }
 
-  const sound = soundFiles[key];
-  const soundPlayer = getSoundPlayer();
+  const cachedSound = soundEffectCache.get(key);
+  if (cachedSound) {
+    cachedSound.stop(() => {
+      cachedSound.play();
+    });
+    return;
+  }
 
-  if (!soundPlayer) {
+  if (cachedSound === null) {
+    return;
+  }
+
+  const soundAsset = soundFiles[key];
+  if (!soundAsset) {
+    soundEffectCache.set(key, null);
     return;
   }
 
   try {
-    soundPlayer.playSoundFile(sound.fileName, sound.fileType);
+    Sound.setCategory('Playback', true);
   } catch {
-    // Sound assets are optional in this milestone. Missing native bundle files should stay silent.
+    // Safe fallback if category setup is unavailable.
   }
+
+  const resolvedAsset = Image.resolveAssetSource(soundAsset);
+  const assetUri = resolvedAsset?.uri;
+
+  if (!assetUri) {
+    soundEffectCache.set(key, null);
+    return;
+  }
+
+  const effect = new Sound(assetUri, '', error => {
+    if (error) {
+      soundEffectCache.set(key, null);
+      return;
+    }
+
+    effect.setVolume(0.75);
+    soundEffectCache.set(key, effect);
+    effect.play();
+  });
+}
+
+function getCurrentBackgroundTrack() {
+  return backgroundMusicTracks[backgroundMusicTrackIndex] ?? backgroundMusicTracks[0];
+}
+
+function playBackgroundTrack(soundPlayer: SoundPlayerModule, asset: number) {
+  try {
+    soundPlayer.setVolume(backgroundMusicVolume);
+  } catch {
+    // Some platforms may not expose volume reliably.
+  }
+
+  try {
+    if (Platform.OS === 'ios') {
+      soundPlayer.setMixAudio(true);
+    }
+  } catch {
+    // Optional on iOS only.
+  }
+
+  try {
+    soundPlayer.playAsset(asset);
+  } catch {
+    // Missing bundled asset should stay silent.
+  }
+}
+
+function ensureBackgroundMusicListener(soundPlayer: SoundPlayerModule) {
+  if (backgroundMusicSubscription) {
+    return;
+  }
+
+  backgroundMusicSubscription = soundPlayer.addEventListener('FinishedPlaying', () => {
+    if (!backgroundMusicEnabled || backgroundMusicPaused) {
+      return;
+    }
+
+    backgroundMusicTrackIndex =
+      (backgroundMusicTrackIndex + 1) % backgroundMusicTracks.length;
+
+    const nextTrack = getCurrentBackgroundTrack();
+    if (!nextTrack) {
+      return;
+    }
+
+    const currentPlayer = getSoundPlayer();
+    if (!currentPlayer) {
+      return;
+    }
+
+    playBackgroundTrack(currentPlayer, nextTrack);
+  });
 }
 
 function triggerHaptic(pattern: number | number[]) {
@@ -136,16 +244,87 @@ export const gameFeedbackService = {
     triggerHaptic(hapticPatterns.levelFail);
   },
 
+  startBackgroundMusic() {
+    if (!useSettingsStore.getState().settings.musicEnabled) {
+      backgroundMusicEnabled = false;
+      return;
+    }
+
+    const soundPlayer = getSoundPlayer();
+    if (!soundPlayer) {
+      return;
+    }
+
+    backgroundMusicEnabled = true;
+    backgroundMusicPaused = false;
+    ensureBackgroundMusicListener(soundPlayer);
+    playBackgroundTrack(soundPlayer, getCurrentBackgroundTrack());
+  },
+
+  pauseBackgroundMusic() {
+    const soundPlayer = getSoundPlayer();
+    if (!soundPlayer || !backgroundMusicEnabled) {
+      return;
+    }
+
+    try {
+      soundPlayer.pause();
+      backgroundMusicPaused = true;
+    } catch {
+      // Keep background music silent on unsupported environments.
+    }
+  },
+
+  resumeBackgroundMusic() {
+    if (!useSettingsStore.getState().settings.musicEnabled) {
+      return;
+    }
+
+    const soundPlayer = getSoundPlayer();
+    if (!soundPlayer) {
+      return;
+    }
+
+    backgroundMusicEnabled = true;
+
+    try {
+      if (backgroundMusicPaused) {
+        soundPlayer.setVolume(backgroundMusicVolume);
+        soundPlayer.resume();
+        backgroundMusicPaused = false;
+        return;
+      }
+    } catch {
+      // Fall back to fresh playback below.
+    }
+
+    this.startBackgroundMusic();
+  },
+
+  stopBackgroundMusic() {
+    const soundPlayer = getSoundPlayer();
+    backgroundMusicEnabled = false;
+    backgroundMusicPaused = false;
+
+    if (!soundPlayer) {
+      return;
+    }
+
+    try {
+      soundPlayer.stop();
+    } catch {
+      // Silent fallback.
+    }
+  },
+
   syncMusicPreference() {
     const { musicEnabled } = useSettingsStore.getState().settings;
-    const soundPlayer = getSoundPlayer();
 
-    if (!musicEnabled && soundPlayer) {
-      try {
-        soundPlayer.stop();
-      } catch {
-        // Background music is not active yet; keep this future-ready and silent.
-      }
+    if (!musicEnabled) {
+      this.stopBackgroundMusic();
+      return;
     }
+
+    this.resumeBackgroundMusic();
   },
 };

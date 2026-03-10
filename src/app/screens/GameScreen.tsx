@@ -13,6 +13,8 @@ import { LevelCompleteModal } from '@centerhit-components/game/LevelCompleteModa
 import { PauseModal } from '@centerhit-components/game/PauseModal';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
 import { useTheme } from '@centerhit-core/theme/useTheme';
+import { useLevelCompleteInterstitial } from '@centerhit-features/ads/hooks/useLevelCompleteInterstitial';
+import { useAdsStore } from '@centerhit-features/ads/store/useAdsStore';
 import { levelService } from '@centerhit-features/levels/services/levelService';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
 import { gameDefaults } from '@centerhit-game/config/gameDefaults';
@@ -29,7 +31,10 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
   const progress = useProgressStore(state => state.progress);
   const setLastPlayedLevel = useProgressStore(state => state.setLastPlayedLevel);
   const saveLevelResult = useProgressStore(state => state.saveLevelResult);
+  const markLevelCompleted = useAdsStore(state => state.markLevelCompleted);
   const hasSavedCompletionRef = useRef(false);
+  const hasCountedCompletionRef = useRef(false);
+  const runLevelCompleteAdGate = useLevelCompleteInterstitial();
   const level = useMemo(
     () => levelService.getLevelById(route.params.levelId),
     [route.params.levelId],
@@ -81,6 +86,7 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
 
   useEffect(() => {
     hasSavedCompletionRef.current = false;
+    hasCountedCompletionRef.current = false;
   }, [safeLevel.id]);
 
   useEffect(() => {
@@ -100,8 +106,18 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
   useEffect(() => {
     if (session.status === 'playing') {
       hasSavedCompletionRef.current = false;
+      hasCountedCompletionRef.current = false;
     }
   }, [session.status]);
+
+  useEffect(() => {
+    if (session.status !== 'completed' || hasCountedCompletionRef.current) {
+      return;
+    }
+
+    hasCountedCompletionRef.current = true;
+    markLevelCompleted();
+  }, [markLevelCompleted, session.status]);
 
   useEffect(() => {
     if (session.status !== 'completed' || hasSavedCompletionRef.current) {
@@ -185,11 +201,17 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
               : 0.12,
       }
     : null;
+  const shouldShowReadyProjectile =
+    session.status === 'playing' &&
+    session.canShoot &&
+    !session.projectile.isActive &&
+    session.objectiveProgress.remainingShots > 0;
 
   return (
     <CoreScreen contentStyle={styles.container}>
       <GameTopBar
         title={safeLevel.title}
+        subtitle={`${t.common.level.toUpperCase()} ${String(safeLevel.order).padStart(2, '0')}`}
         onBack={() => navigation.goBack()}
         onPause={() => {
           pause();
@@ -218,9 +240,49 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                 {t.common.score}
               </CoreText>
               <CoreText variant="subtitle">{session.score}</CoreText>
-              <CoreText variant="caption" colorRole="textSecondary" style={styles.objectiveMeta}>
-                {scoreSubtitle}
-              </CoreText>
+              <View style={styles.starProgressWrap}>
+                <View
+                  style={[
+                    styles.starProgressTrack,
+                    {
+                      backgroundColor: theme.colors.overlay,
+                      borderColor: theme.colors.border,
+                    },
+                  ]}>
+                  <View
+                    style={[
+                      styles.starProgressTrackInner,
+                      { backgroundColor: theme.colors.surfaceSoft },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.starProgressFill,
+                      {
+                        backgroundColor:
+                          scoreProgress.targetStars === null
+                            ? theme.colors.success
+                            : theme.colors.accentPrimary,
+                        width: `${scoreProgress.progressRatio * 100}%`,
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.starProgressTarget,
+                      {
+                        backgroundColor:
+                          scoreProgress.targetStars === null
+                            ? theme.colors.success
+                            : theme.colors.accentSecondary,
+                      },
+                    ]}
+                  />
+                </View>
+                <CoreText variant="caption" colorRole="textSecondary" style={styles.objectiveMeta}>
+                  {scoreSubtitle}
+                </CoreText>
+              </View>
             </View>
             <View style={styles.livesWrap}>
               <CoreText variant="caption" colorRole="textSecondary" style={styles.livesLabel}>
@@ -242,8 +304,8 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                           borderColor: isActive
                             ? theme.colors.danger
                             : theme.colors.borderSoft,
-                          opacity: isActive ? 1 : 0.32,
                         },
+                        isActive ? styles.lifeChipActive : styles.lifeChipInactive,
                       ]}>
                       <CoreText
                         variant="caption"
@@ -427,8 +489,10 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                     styles.targetInner,
                     {
                       backgroundColor: theme.colors.perfectHit,
-                      opacity: targetFlashActive ? 0.9 : 0.72,
                     },
+                    targetFlashActive
+                      ? styles.targetInnerFlashActive
+                      : styles.targetInnerFlashIdle,
                   ]}
                 />
                 <View
@@ -472,20 +536,22 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                 />
               </View>
 
-              <View
-                style={[
-                  styles.spawnPoint,
-                  {
-                    backgroundColor: theme.colors.perfectHit,
-                    borderColor: theme.colors.accentPrimary,
-                    bottom:
-                      (1 - session.launcher.y) * stageSize.height +
-                      launcherHeight / 2 +
-                      10,
-                    left: session.launcher.x * stageSize.width - projectileSize / 2,
-                  },
-                ]}
-              />
+              {shouldShowReadyProjectile ? (
+                <View
+                  style={[
+                    styles.spawnPoint,
+                    {
+                      backgroundColor: theme.colors.perfectHit,
+                      borderColor: theme.colors.accentPrimary,
+                      bottom:
+                        (1 - session.launcher.y) * stageSize.height +
+                        launcherHeight / 2 +
+                        10,
+                      left: session.launcher.x * stageSize.width - projectileSize / 2,
+                    },
+                  ]}
+                />
+              ) : null}
 
               {session.projectile.isActive ? (
                 <>
@@ -572,18 +638,30 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
         hitCount={session.hits}
         perfectCount={session.perfectHits}
         onNextLevel={() => {
-          if (nextLevel) {
-            navigation.replace(ROUTES.Game, { levelId: nextLevel.id });
-            return;
-          }
+          runLevelCompleteAdGate(() => {
+            if (nextLevel) {
+              navigation.replace(ROUTES.Game, { levelId: nextLevel.id });
+              return;
+            }
 
-          navigation.navigate(ROUTES.Levels);
+            navigation.replace(ROUTES.Levels);
+          }).catch(() => {
+            if (nextLevel) {
+              navigation.replace(ROUTES.Game, { levelId: nextLevel.id });
+              return;
+            }
+
+            navigation.replace(ROUTES.Levels);
+          });
         }}
         onRetry={() => {
           retry();
           hasSavedCompletionRef.current = false;
+          hasCountedCompletionRef.current = false;
         }}
-        onHome={handleExitToHome}
+        onHome={() => {
+          runLevelCompleteAdGate(handleExitToHome).catch(handleExitToHome);
+        }}
       />
 
       <GameOverModal
@@ -750,6 +828,12 @@ const styles = StyleSheet.create({
     height: 5,
     opacity: 0.92,
   },
+  targetInnerFlashActive: {
+    opacity: 0.9,
+  },
+  targetInnerFlashIdle: {
+    opacity: 0.72,
+  },
   objectiveStrip: {
     borderRadius: 20,
     paddingHorizontal: 14,
@@ -776,7 +860,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   objectiveMeta: {
-    marginTop: 2,
+    marginTop: 4,
+  },
+  starProgressWrap: {
+    marginTop: 6,
+  },
+  starProgressTrack: {
+    borderWidth: 1,
+    borderRadius: 999,
+    height: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    width: '100%',
+  },
+  starProgressTrackInner: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+    opacity: 0.9,
+  },
+  starProgressFill: {
+    borderRadius: 999,
+    height: '100%',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
+  starProgressTarget: {
+    borderRadius: 999,
+    height: 12,
+    position: 'absolute',
+    right: 0,
+    top: -2,
+    width: 3,
   },
   livesWrap: {
     alignItems: 'flex-end',
@@ -796,6 +911,12 @@ const styles = StyleSheet.create({
     height: 24,
     justifyContent: 'center',
     width: 24,
+  },
+  lifeChipActive: {
+    opacity: 1,
+  },
+  lifeChipInactive: {
+    opacity: 0.32,
   },
   statsRow: {
     columnGap: 10,

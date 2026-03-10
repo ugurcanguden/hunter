@@ -19,9 +19,11 @@ type ProgressStore = {
   saveLevelResult: (input: SaveLevelResultInput) => Promise<void>;
   setLastPlayedLevel: (levelId: string) => Promise<void>;
   resetProgress: () => Promise<void>;
+  syncUnlockedLevelsForPack: (packId: string, levelIds: string[]) => Promise<void>;
   getLevelRecord: (levelId: string) => LevelProgressRecord | undefined;
   getLevelStars: (levelId: string) => number;
   isLevelUnlocked: (levelId: string) => boolean;
+  isPackUnlocked: (packId: string) => boolean;
 };
 
 export const useProgressStore = create<ProgressStore>((set, get) => ({
@@ -54,6 +56,11 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
     set({ progress });
   },
 
+  async syncUnlockedLevelsForPack(packId, levelIds) {
+    const progress = await progressService.syncUnlockedLevelsForPack(packId, levelIds);
+    set({ progress });
+  },
+
   getLevelRecord(levelId) {
     return get().progress.levelRecords[levelId];
   },
@@ -64,5 +71,9 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
   isLevelUnlocked(levelId) {
     return isLevelUnlocked(get().progress, levelId);
+  },
+
+  isPackUnlocked(packId) {
+    return get().progress.unlockedPackIds.includes(packId);
   },
 }));

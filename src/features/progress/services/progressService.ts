@@ -1,7 +1,11 @@
 import { DEFAULT_LEVEL_ID } from '@centerhit-core/constants/app';
 import { STORAGE_KEYS } from '@centerhit-core/constants/storageKeys';
 import { storageClient } from '@centerhit-core/storage/storageClient';
-import { calculateTotalStars } from '@centerhit-core/utils/progress';
+import {
+  calculateTotalStars,
+  isPackCompleted,
+} from '@centerhit-core/utils/progress';
+import { useCampaignStore } from '@centerhit-features/campaign/store/useCampaignStore';
 import { levelService } from '@centerhit-features/levels/services/levelService';
 import {
   LevelProgressRecord,
@@ -10,6 +14,7 @@ import {
 } from '@centerhit-features/progress/types/progressTypes';
 
 export const defaultProgress: ProgressState = {
+  unlockedPackIds: ['pack-01'],
   unlockedLevelIds: [DEFAULT_LEVEL_ID],
   levelRecords: {},
   bestScore: 0,
@@ -33,8 +38,16 @@ function mergeLevelRecord(
 export const progressService = {
   async getProgress(): Promise<ProgressState> {
     const stored = await storageClient.getItem<ProgressState>(STORAGE_KEYS.progress);
+    if (!stored) {
+      return defaultProgress;
+    }
 
-    return stored ?? defaultProgress;
+    return {
+      ...defaultProgress,
+      ...stored,
+      unlockedPackIds: stored.unlockedPackIds ?? defaultProgress.unlockedPackIds,
+      unlockedLevelIds: stored.unlockedLevelIds ?? defaultProgress.unlockedLevelIds,
+    };
   },
 
   async saveProgress(progress: ProgressState) {
@@ -45,12 +58,25 @@ export const progressService = {
     const progress = await this.getProgress();
     const currentRecord = progress.levelRecords[input.levelId];
     const mergedRecord = mergeLevelRecord(currentRecord, input);
-    const nextLevel = levelService.getNextLevel(input.levelId);
-    const unlockedLevelIds = nextLevel
-      ? Array.from(new Set([...progress.unlockedLevelIds, nextLevel.id]))
-      : progress.unlockedLevelIds;
+    const campaignState = useCampaignStore.getState();
+    const currentPack = campaignState.getPackByLevelId(input.levelId);
+    let unlockedLevelIds = [...progress.unlockedLevelIds];
+    let unlockedPackIds = [...progress.unlockedPackIds];
+
+    if (currentPack) {
+      const currentPackLevels = (campaignState.levelsByPackId[currentPack.packId] ?? [])
+        .slice()
+        .sort((left, right) => left.order - right.order);
+      const currentIndex = currentPackLevels.findIndex(level => level.id === input.levelId);
+      const nextLevelInPack = currentIndex >= 0 ? currentPackLevels[currentIndex + 1] : null;
+
+      if (nextLevelInPack) {
+        unlockedLevelIds = Array.from(new Set([...unlockedLevelIds, nextLevelInPack.id]));
+      }
+    }
 
     const nextProgress: ProgressState = {
+      unlockedPackIds,
       unlockedLevelIds,
       levelRecords: {
         ...progress.levelRecords,
@@ -60,6 +86,38 @@ export const progressService = {
       lastPlayedLevelId: input.levelId,
       totalStars: 0,
     };
+
+    if (currentPack) {
+      const currentPackLevels = campaignState.levelsByPackId[currentPack.packId] ?? [];
+      const packCompleted = isPackCompleted(
+        nextProgress,
+        currentPack,
+        currentPackLevels,
+      );
+
+      if (packCompleted) {
+        const nextPack = campaignState.packs.find(
+          pack => pack.unlockAfterPackId === currentPack.packId,
+        );
+
+        if (nextPack && !nextProgress.unlockedPackIds.includes(nextPack.packId)) {
+          nextProgress.unlockedPackIds = [...nextProgress.unlockedPackIds, nextPack.packId];
+
+          const nextPackLevels = (campaignState.levelsByPackId[nextPack.packId] ?? [])
+            .slice()
+            .sort((left, right) => left.order - right.order);
+          const firstLevel = nextPackLevels[0];
+          if (firstLevel) {
+            nextProgress.unlockedLevelIds = Array.from(
+              new Set([
+                ...nextProgress.unlockedLevelIds,
+                firstLevel.id,
+              ]),
+            );
+          }
+        }
+      }
+    }
 
     nextProgress.totalStars = calculateTotalStars(nextProgress.levelRecords);
     await this.saveProgress(nextProgress);
@@ -99,6 +157,36 @@ export const progressService = {
     await this.saveProgress(defaultProgress);
 
     return defaultProgress;
+  },
+
+  async syncUnlockedLevelsForPack(packId: string, levelIds: string[]): Promise<ProgressState> {
+    const progress = await this.getProgress();
+
+    if (!progress.unlockedPackIds.includes(packId)) {
+      return progress;
+    }
+
+    const sortedLevelIds = [...levelIds];
+    const alreadyUnlocked = sortedLevelIds.filter(levelId =>
+      progress.unlockedLevelIds.includes(levelId),
+    );
+
+    if (alreadyUnlocked.length > 0) {
+      return progress;
+    }
+
+    const firstLevelId = sortedLevelIds[0];
+    if (!firstLevelId) {
+      return progress;
+    }
+
+    const nextProgress = {
+      ...progress,
+      unlockedLevelIds: Array.from(new Set([...progress.unlockedLevelIds, firstLevelId])),
+    };
+
+    await this.saveProgress(nextProgress);
+    return nextProgress;
   },
 
   async getLastPlayedLevel() {
