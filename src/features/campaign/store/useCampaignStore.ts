@@ -2,7 +2,10 @@ import { create } from 'zustand';
 
 import { STORAGE_KEYS } from '@centerhit-core/constants/storageKeys';
 import { storageClient } from '@centerhit-core/storage/storageClient';
-import { localCampaignPack } from '@centerhit-features/levels/data/localCampaignPack';
+import {
+  localCampaignPack,
+  localCampaignPacks,
+} from '@centerhit-features/levels/data/localCampaignPack';
 import { levels as localLevels } from '@centerhit-features/levels/data/levels';
 import { campaignRepository } from '@centerhit-features/campaign/services/campaignRepository';
 import {
@@ -31,11 +34,13 @@ type CampaignStore = {
 };
 
 const initialLevelsByPackId = {
-  [localCampaignPack.packId]: [...localLevels],
+  'pack-01': localLevels.filter(level => level.order >= 1 && level.order <= 10),
+  'pack-02': localLevels.filter(level => level.order >= 11 && level.order <= 20),
+  'pack-03': localLevels.filter(level => level.order >= 21 && level.order <= 30),
 };
 
 export const useCampaignStore = create<CampaignStore>((set, get) => ({
-  packs: [localCampaignPack],
+  packs: localCampaignPacks,
   levelsByPackId: initialLevelsByPackId,
   expandedPackId: null,
   loadedPackLevelIds: [localCampaignPack.packId],
@@ -53,7 +58,7 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
       set({ packs, isLoaded: true, isRefreshing: false });
     } catch (error) {
       console.warn('[campaign] loadCampaign failed', error);
-      set({ isLoaded: true, isRefreshing: false });
+      set({ packs: localCampaignPacks, isLoaded: true, isRefreshing: false });
     }
   },
 
@@ -166,7 +171,7 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
     ]);
 
     set({
-      packs: [localCampaignPack],
+      packs: localCampaignPacks,
       levelsByPackId: initialLevelsByPackId,
       expandedPackId: null,
       loadedPackLevelIds: [localCampaignPack.packId],

@@ -180,7 +180,6 @@ export function LevelsScreen({ navigation }: ScreenProps<'Levels'>) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     paddingBottom: 28,
     position: 'relative',
   },

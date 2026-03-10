@@ -1,6 +1,9 @@
 import { STORAGE_KEYS } from '@centerhit-core/constants/storageKeys';
 import { storageClient } from '@centerhit-core/storage/storageClient';
-import { localCampaignPack } from '@centerhit-features/levels/data/localCampaignPack';
+import {
+  localCampaignPack,
+  localCampaignPacks,
+} from '@centerhit-features/levels/data/localCampaignPack';
 import { levels } from '@centerhit-features/levels/data/levels';
 import { remotePackLevelService } from '@centerhit-features/campaign/services/remotePackLevelService';
 import { remotePackService } from '@centerhit-features/campaign/services/remotePackService';
@@ -12,22 +15,28 @@ import {
 import { LevelDefinition } from '@centerhit-features/levels/types/levelTypes';
 
 function mergePacks(remotePacks: readonly CampaignPackDefinition[]) {
-  const seen = new Set<string>([localCampaignPack.packId]);
-  const merged = [localCampaignPack];
+  const remoteByPackId = new Map(
+    remotePacks
+      .filter(pack => pack.order >= 2)
+      .map(pack => [pack.packId, pack] as const),
+  );
+
+  const merged = localCampaignPacks.map(
+    pack => remoteByPackId.get(pack.packId) ?? pack,
+  );
 
   remotePacks
-    .filter(pack => pack.order >= 2)
+    .filter(
+      pack =>
+        pack.order >= 2 &&
+        !merged.some(localPack => localPack.packId === pack.packId),
+    )
     .sort((left, right) => left.order - right.order)
     .forEach(pack => {
-      if (seen.has(pack.packId)) {
-        return;
-      }
-
       merged.push(pack);
-      seen.add(pack.packId);
     });
 
-  return merged;
+  return merged.sort((left, right) => left.order - right.order);
 }
 
 export const campaignRepository = {
@@ -48,7 +57,7 @@ export const campaignRepository = {
       return mergePacks(cached?.packs ?? []);
     } catch (error) {
       console.warn('[campaign] loadCampaignPacks fallback', error);
-      return [localCampaignPack];
+      return localCampaignPacks;
     }
   },
 
