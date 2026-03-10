@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { CoreButton } from '@centerhit-components/common/CoreButton';
+import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreModal } from '@centerhit-components/common/CoreModal';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
@@ -32,20 +33,22 @@ export function LevelCompleteModal({
 }: LevelCompleteModalProps) {
   const { t } = useI18n();
   const { theme } = useTheme();
-  const starString = stars > 0 ? '★'.repeat(stars) : '0';
 
   return (
     <CoreModal visible={visible} onDismiss={onDismiss} tone="success">
       <CoreText variant="title" align="center">
         {t.game.completeTitle}
       </CoreText>
-      <CoreText
-        variant="title"
-        colorRole="perfectHit"
-        align="center"
-        style={styles.stars}>
-        {starString}
-      </CoreText>
+      <View style={styles.starsRow}>
+        {Array.from({ length: 3 }, (_, index) => (
+          <CoreIcon
+            key={`result-star-${index}`}
+            name="star"
+            size={22}
+            color={index < stars ? theme.colors.perfectHit : theme.colors.borderSoft}
+          />
+        ))}
+      </View>
       <CoreText
         variant="body"
         colorRole="textSecondary"
@@ -110,7 +113,11 @@ export function LevelCompleteModal({
 }
 
 const styles = StyleSheet.create({
-  stars: {
+  starsRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
     marginTop: 12,
   },
   sub: {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CoreCard } from '@centerhit-components/common/CoreCard';
+import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { useTheme } from '@centerhit-core/theme/useTheme';
 
@@ -90,9 +91,7 @@ export function PackCard({
               },
             ]}>
             {locked ? (
-              <CoreText variant="caption" colorRole="warning" style={styles.lockIcon}>
-                🔒
-              </CoreText>
+              <CoreIcon name="lock-closed" size={14} color={theme.colors.warning} />
             ) : null}
             <CoreText
               variant="caption"
@@ -132,13 +131,19 @@ export function PackCard({
               {locked ? 'Locked' : completed ? 'Completed' : highlighted ? 'Next Up' : 'Open'}
             </CoreText>
           </View>
-          <CoreText
-            variant="title"
-            colorRole={
-              locked ? 'textSecondary' : highlighted ? 'accentPrimary' : completed ? 'success' : 'textPrimary'
-            }>
-            {locked ? '🔒' : highlighted ? '▶' : completed ? '✓' : '•'}
-          </CoreText>
+          <CoreIcon
+            name={locked ? 'lock-closed' : highlighted ? 'play' : completed ? 'checkmark' : 'ellipse'}
+            size={17}
+            color={
+              locked
+                ? theme.colors.textSecondary
+                : highlighted
+                  ? theme.colors.accentPrimary
+                  : completed
+                    ? theme.colors.success
+                    : theme.colors.textPrimary
+            }
+          />
         </View>
       </CoreCard>
     </Pressable>
@@ -185,9 +190,6 @@ const styles = StyleSheet.create({
     gap: 6,
     minHeight: 34,
     paddingHorizontal: 12,
-  },
-  lockIcon: {
-    marginTop: -1,
   },
   statusText: {
     letterSpacing: 0.8,

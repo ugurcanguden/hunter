@@ -6,6 +6,8 @@ import { useCampaignStore } from '@centerhit-features/campaign/store/useCampaign
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
 import { useSettingsStore } from '@centerhit-features/settings/store/useSettingsStore';
 
+const MIN_SPLASH_DURATION_MS = 1800;
+
 export function BootstrapGate({ children }: PropsWithChildren) {
   const loadSettings = useSettingsStore(state => state.loadSettings);
   const loadProgress = useProgressStore(state => state.loadProgress);
@@ -15,12 +17,23 @@ export function BootstrapGate({ children }: PropsWithChildren) {
 
   useEffect(() => {
     let active = true;
+    const startedAt = Date.now();
 
-    Promise.all([loadSettings(), loadProgress(), loadCampaign()]).finally(() => {
-      if (active) {
-        setReady(true);
-      }
-    });
+    Promise.all([loadSettings(), loadProgress(), loadCampaign()])
+      .finally(async () => {
+        const elapsedMs = Date.now() - startedAt;
+        const remainingMs = Math.max(MIN_SPLASH_DURATION_MS - elapsedMs, 0);
+        if (remainingMs > 0) {
+          await new Promise<void>(resolve => {
+            setTimeout(() => resolve(), remainingMs);
+          });
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setReady(true);
+        }
+      });
 
     return () => {
       active = false;

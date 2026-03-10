@@ -66,7 +66,7 @@ export function LevelsScreen({ navigation }: ScreenProps<'Levels'>) {
 
       <View style={styles.headerRow}>
         <CoreIconButton
-          icon="←"
+          icon="chevron-back"
           onPress={() => navigation.navigate(ROUTES.Home)}
           accessibilityLabel={t.common.homeAction}
           style={styles.headerButton}

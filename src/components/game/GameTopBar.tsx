@@ -14,7 +14,7 @@ type GameTopBarProps = {
 export function GameTopBar({ title, subtitle, onBack, onPause }: GameTopBarProps) {
   return (
     <View style={styles.container}>
-      <CoreIconButton icon="←" onPress={onBack} accessibilityLabel="Back" style={styles.button} />
+      <CoreIconButton icon="chevron-back" onPress={onBack} accessibilityLabel="Back" style={styles.button} />
       <View style={styles.titleWrap}>
         <CoreText variant="display" align="center" style={styles.title}>
           {title.toUpperCase()}
@@ -25,7 +25,7 @@ export function GameTopBar({ title, subtitle, onBack, onPause }: GameTopBarProps
           </CoreText>
         ) : null}
       </View>
-      <CoreIconButton icon="Ⅱ" onPress={onPause} accessibilityLabel="Pause" style={styles.button} />
+      <CoreIconButton icon="pause" onPress={onPause} accessibilityLabel="Pause" style={styles.button} />
     </View>
   );
 }

@@ -4,6 +4,7 @@ import { LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 import { ScreenProps } from '@centerhit-app/navigation/navigationTypes';
 import { ROUTES } from '@centerhit-app/navigation/routeNames';
 import { CoreCard } from '@centerhit-components/common/CoreCard';
+import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { GameOverModal } from '@centerhit-components/game/GameOverModal';
@@ -63,7 +64,7 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
       return t.game.maxStars;
     }
 
-    return `${scoreProgress.remainingScore} • ${scoreProgress.targetStars}★ ${t.game.nextStarIn}`;
+    return `${scoreProgress.remainingScore} ${t.game.nextStarIn} (${scoreProgress.targetStars})`;
   }, [scoreProgress.remainingScore, scoreProgress.targetStars, t.game.maxStars, t.game.nextStarIn]);
   const failReason = useMemo(
     () => {
@@ -307,15 +308,15 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                         },
                         isActive ? styles.lifeChipActive : styles.lifeChipInactive,
                       ]}>
-                      <CoreText
-                        variant="caption"
-                        style={{
-                          color: isActive
+                      <CoreIcon
+                        name="heart"
+                        size={12}
+                        color={
+                          isActive
                             ? theme.colors.textPrimary
-                            : theme.colors.textSecondary,
-                        }}>
-                        ♥
-                      </CoreText>
+                            : theme.colors.textSecondary
+                        }
+                      />
                     </View>
                   );
                 })}

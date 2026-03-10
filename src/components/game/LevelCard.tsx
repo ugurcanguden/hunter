@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { CoreCard } from '@centerhit-components/common/CoreCard';
+import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { getDifficultyLabel } from '@centerhit-core/utils/level';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
@@ -53,9 +54,7 @@ export function LevelCard({
           </CoreText>
           <View style={styles.statusRow}>
             {!unlocked ? (
-              <CoreText variant="caption" colorRole="warning" style={styles.lockIcon}>
-                🔒
-              </CoreText>
+              <CoreIcon name="lock-closed" size={14} color={theme.colors.warning} />
             ) : null}
             <CoreText
               variant="caption"
@@ -81,7 +80,7 @@ export function LevelCard({
           colorRole="textSecondary"
           numberOfLines={1}
           style={styles.stars}>
-          {stars > 0 ? '★'.repeat(stars) : t.common.noStarsYet}
+          {stars > 0 ? `${stars}/3` : t.common.noStarsYet}
         </CoreText>
       </CoreCard>
     </Pressable>
@@ -106,9 +105,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     gap: 6,
-  },
-  lockIcon: {
-    marginTop: -1,
   },
   title: {
     marginBottom: 6,

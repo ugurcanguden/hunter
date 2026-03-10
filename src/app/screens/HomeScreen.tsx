@@ -6,6 +6,7 @@ import { ROUTES } from '@centerhit-app/navigation/routeNames';
 import { AppBannerAd } from '@centerhit-features/ads/components/AppBannerAd';
 import { CoreButton } from '@centerhit-components/common/CoreButton';
 import { CoreCard } from '@centerhit-components/common/CoreCard';
+import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { APP_NAME } from '@centerhit-core/constants/app';
@@ -92,9 +93,7 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
             styles.headerInfoButton,
             { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
           ]}>
-          <CoreText variant="subtitle" colorRole="accentPrimary">
-            ▶
-          </CoreText>
+          <CoreIcon name="play" size={20} color={theme.colors.accentPrimary} />
         </View>
       </View>
 
@@ -162,9 +161,7 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
             </CoreText>
             <View style={styles.summaryValueRow}>
               <CoreText variant="title">{progress.totalStars}</CoreText>
-              <CoreText variant="bodyStrong" colorRole="warning">
-                ✪
-              </CoreText>
+              <CoreIcon name="star" size={16} color={theme.colors.warning} />
             </View>
           </CoreCard>
           <CoreCard variant="soft" style={styles.summaryCard}>
@@ -175,9 +172,7 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
               <CoreText variant="title">
                 {unlockedCount}/{levels.length}
               </CoreText>
-              <CoreText variant="bodyStrong" colorRole="accentPrimary">
-                🔓
-              </CoreText>
+              <CoreIcon name="lock-open" size={16} color={theme.colors.accentPrimary} />
             </View>
           </CoreCard>
           <CoreCard variant="soft" style={styles.summaryCard}>

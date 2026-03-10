@@ -5,6 +5,7 @@ import { ScreenProps } from '@centerhit-app/navigation/navigationTypes';
 import { ROUTES } from '@centerhit-app/navigation/routeNames';
 import { CoreButton } from '@centerhit-components/common/CoreButton';
 import { CoreCard } from '@centerhit-components/common/CoreCard';
+import { CoreIcon, CoreIconName } from '@centerhit-components/common/CoreIcon';
 import { CoreIconButton } from '@centerhit-components/common/CoreIconButton';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
@@ -22,7 +23,7 @@ function SettingsRow({
   value,
   onToggle,
 }: {
-  icon: string;
+  icon: CoreIconName;
   iconTint: string;
   iconBackground: string;
   label: string;
@@ -36,9 +37,7 @@ function SettingsRow({
     <View style={styles.row}>
       <View style={styles.rowLeft}>
         <View style={[styles.rowIcon, { backgroundColor: iconBackground }]}>
-          <CoreText variant="subtitle" style={{ color: iconTint }}>
-            {icon}
-          </CoreText>
+          <CoreIcon name={icon} size={21} color={iconTint} />
         </View>
         <View style={styles.rowTextWrap}>
           <CoreText variant="bodyStrong">{label}</CoreText>
@@ -114,7 +113,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
 
       <View style={styles.headerRow}>
         <CoreIconButton
-          icon="←"
+          icon="chevron-back"
           onPress={() => navigation.navigate(ROUTES.Home)}
           accessibilityLabel={t.common.homeAction}
           style={styles.backButton}
@@ -131,9 +130,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
             styles.headerInfoButton,
             { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
           ]}>
-          <CoreText variant="subtitle" colorRole="accentPrimary">
-            ⚙
-          </CoreText>
+          <CoreIcon name="settings-outline" size={21} color={theme.colors.accentPrimary} />
         </View>
       </View>
 
@@ -145,7 +142,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
 
       <CoreCard variant="soft" style={styles.sectionCard}>
         <SettingsRow
-          icon="🔊"
+          icon="volume-high-outline"
           iconTint={theme.colors.accentPrimary}
           iconBackground={theme.colors.stageGlow}
           label={t.common.sound}
@@ -154,7 +151,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
           onToggle={handleToggleSound}
         />
         <SettingsRow
-          icon="♪"
+          icon="musical-note-outline"
           iconTint={theme.colors.textSecondary}
           iconBackground={theme.colors.surface}
           label={t.common.music}
@@ -162,7 +159,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
           onToggle={handleToggleMusic}
         />
         <SettingsRow
-          icon="📳"
+          icon="phone-portrait-outline"
           iconTint={theme.colors.warning}
           iconBackground={'rgba(255, 182, 72, 0.12)'}
           label={t.common.vibration}
@@ -173,9 +170,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
         <View style={styles.languageRow}>
           <View style={styles.rowLeft}>
             <View style={[styles.rowIcon, { backgroundColor: theme.colors.surface }]}>
-              <CoreText variant="subtitle" style={{ color: theme.colors.textSecondary }}>
-                ◎
-              </CoreText>
+              <CoreIcon name="globe-outline" size={20} color={theme.colors.textSecondary} />
             </View>
             <View style={styles.rowTextWrap}>
             <CoreText variant="bodyStrong">{t.common.language}</CoreText>
@@ -197,9 +192,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
       <CoreCard variant="default" style={[styles.sectionCard, styles.dangerCard, styles.dangerCardBorder]}>
         <View style={styles.progressHeader}>
           <View style={[styles.progressIconWrap, styles.progressIconDanger]}>
-            <CoreText variant="subtitle" style={{ color: theme.colors.danger }}>
-              ⚠
-            </CoreText>
+            <CoreIcon name="warning-outline" size={20} color={theme.colors.danger} />
           </View>
           <CoreText variant="title">{t.settings.progress}</CoreText>
         </View>

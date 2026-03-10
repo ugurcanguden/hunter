@@ -5,6 +5,7 @@ import { ScreenProps } from '@centerhit-app/navigation/navigationTypes';
 import { ROUTES } from '@centerhit-app/navigation/routeNames';
 import { AppBannerAd } from '@centerhit-features/ads/components/AppBannerAd';
 import { CoreCard } from '@centerhit-components/common/CoreCard';
+import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreIconButton } from '@centerhit-components/common/CoreIconButton';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
@@ -77,17 +78,12 @@ function PackLevelTile({
             <>
               <View style={styles.tileStarsRow}>
                 {Array.from({ length: 3 }, (_, index) => (
-                  <CoreText
+                  <CoreIcon
                     key={`${level.id}-star-${index}`}
-                    variant="subtitle"
-                    style={{
-                      color:
-                        index < stars
-                          ? theme.colors.accentSecondary
-                          : theme.colors.border,
-                    }}>
-                    ★
-                  </CoreText>
+                    name="star"
+                    size={15}
+                    color={index < stars ? theme.colors.accentSecondary : theme.colors.border}
+                  />
                 ))}
               </View>
 
@@ -100,18 +96,16 @@ function PackLevelTile({
                       : theme.colors.success,
                   },
                 ]}>
-                <CoreText
-                  variant="subtitle"
-                  style={{ color: theme.colors.backgroundPrimary }}>
-                  {isCurrent ? '▶' : isCompleted ? '✓' : '•'}
-                </CoreText>
+                <CoreIcon
+                  name={isCurrent ? 'play' : isCompleted ? 'checkmark' : 'ellipse'}
+                  size={14}
+                  color={theme.colors.backgroundPrimary}
+                />
               </View>
             </>
           ) : (
             <View style={styles.tileLockedWrap}>
-              <CoreText variant="title" colorRole="textSecondary">
-                🔒
-              </CoreText>
+              <CoreIcon name="lock-closed" size={20} color={theme.colors.textSecondary} />
             </View>
           )}
         </View>
@@ -199,7 +193,7 @@ export function PackScreen({ navigation, route }: ScreenProps<'Pack'>) {
 
       <View style={styles.headerRow}>
         <CoreIconButton
-          icon="←"
+          icon="chevron-back"
           onPress={() => navigation.goBack()}
           accessibilityLabel={t.common.levels}
           style={styles.headerButton}
@@ -224,9 +218,7 @@ export function PackScreen({ navigation, route }: ScreenProps<'Pack'>) {
             styles.headerInfoButton,
             { borderColor: theme.colors.border, backgroundColor: theme.colors.surface },
           ]}>
-          <CoreText variant="subtitle" colorRole="accentPrimary">
-            i
-          </CoreText>
+          <CoreIcon name="information-circle" size={20} color={theme.colors.accentPrimary} />
         </View>
       </View>
 

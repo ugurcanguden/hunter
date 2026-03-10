@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 
-import { CoreText } from '@centerhit-components/common/CoreText';
+import { CoreIcon, CoreIconName } from '@centerhit-components/common/CoreIcon';
 import { useTheme } from '@centerhit-core/theme/useTheme';
 
 type CoreIconButtonProps = {
-  icon: string;
+  icon: CoreIconName;
   onPress: () => void;
   accessibilityLabel: string;
   style?: ViewStyle;
@@ -34,7 +34,7 @@ export function CoreIconButton({
         theme.shadows.card,
         style,
       ]}>
-      <CoreText variant="subtitle">{icon}</CoreText>
+      <CoreIcon name={icon} size={22} color={theme.colors.accentPrimary} />
     </Pressable>
   );
 }
