@@ -156,7 +156,7 @@ Bu Gizlilik Politikası zaman zaman güncellenebilir. Güncellemeler bu sayfada 
 
 Bu Gizlilik Politikası hakkında sorularınız varsa şu adresten ulaşabilirsiniz:
 
-- E-posta: `support@centerhit.app`
+- E-posta: `gudenugurcan@gmail.com`
 
 Yayın öncesinde bu adresi gerçek destek e-posta adresinizle değiştirin.
 
