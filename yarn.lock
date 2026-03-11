@@ -3704,7 +3704,7 @@ __metadata:
     react-native: 0.84.1
     react-native-gesture-handler: ^2.30.0
     react-native-google-mobile-ads: ^16.2.2
-    react-native-safe-area-context: ^5.5.2
+    react-native-safe-area-context: ^5.7.0
     react-native-screens: ^4.24.0
     react-native-sound: ^0.13.0
     react-native-sound-player: ^0.14.5
@@ -7869,7 +7869,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-safe-area-context@npm:^5.5.2":
+"react-native-safe-area-context@npm:^5.7.0":
   version: 5.7.0
   resolution: "react-native-safe-area-context@npm:5.7.0"
   peerDependencies:
