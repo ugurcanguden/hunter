@@ -59,6 +59,27 @@ type TranslationTree = {
   settings: {
     title: string;
     subtitle: string;
+    feedback: string;
+    feedbackCopy: string;
+    feedbackMessageLabel: string;
+    feedbackMessagePlaceholder: string;
+    feedbackSubmit: string;
+    feedbackSending: string;
+    feedbackSuccessTitle: string;
+    feedbackSuccessMessage: string;
+    feedbackErrorTitle: string;
+    feedbackErrorMessage: string;
+    feedbackDailyLimitTitle: string;
+    feedbackDailyLimitMessage: string;
+    feedbackRemaining: string;
+    feedbackNoPersonalInfo: string;
+    feedbackCategoryLabel: string;
+    feedbackCategories: {
+      complaint: string;
+      suggestion: string;
+      question: string;
+      other: string;
+    };
     progress: string;
     progressCopy: string;
     campaignTools: string;
@@ -201,6 +222,27 @@ export const translations: Record<AppLanguage, TranslationTree> = {
     settings: {
       title: 'Settings',
       subtitle: 'Everything is stored on-device. No login, no sync, no cloud profile.',
+      feedback: 'Feedback',
+      feedbackCopy: 'Tell us what feels broken, confusing, or worth improving. Please do not include personal information.',
+      feedbackMessageLabel: 'Your feedback',
+      feedbackMessagePlaceholder: 'What happened, or what should improve?',
+      feedbackSubmit: 'Send Feedback',
+      feedbackSending: 'Sending...',
+      feedbackSuccessTitle: 'Thanks',
+      feedbackSuccessMessage: 'Your feedback was sent successfully.',
+      feedbackErrorTitle: 'Feedback Error',
+      feedbackErrorMessage: 'We could not send your feedback right now.',
+      feedbackDailyLimitTitle: 'Daily Limit Reached',
+      feedbackDailyLimitMessage: 'You can send up to 5 feedback messages per day.',
+      feedbackRemaining: '{{remaining}} / {{limit}} left today',
+      feedbackNoPersonalInfo: 'No email, name, or personal data is requested.',
+      feedbackCategoryLabel: 'Category',
+      feedbackCategories: {
+        complaint: 'Complaint',
+        suggestion: 'Suggestion',
+        question: 'Question',
+        other: 'Other',
+      },
       progress: 'Progress',
       progressCopy: 'Reset local progress, unlocked levels, stars, and cached best scores.',
       campaignTools: 'Course Tools',
@@ -341,6 +383,27 @@ export const translations: Record<AppLanguage, TranslationTree> = {
     settings: {
       title: 'Ayarlar',
       subtitle: 'Her şey cihazda tutulur. Giriş yok, senkron yok, bulut profil yok.',
+      feedback: 'Geri Bildirim',
+      feedbackCopy: 'Bozuk, karisik veya gelistirilebilir noktalarni bize yaz. Lutfen kisisel bilgi ekleme.',
+      feedbackMessageLabel: 'Mesajin',
+      feedbackMessagePlaceholder: 'Ne oldu ya da neyin iyilesmesini istiyorsun?',
+      feedbackSubmit: 'Geri Bildirim Gonder',
+      feedbackSending: 'Gonderiliyor...',
+      feedbackSuccessTitle: 'Tesekkurler',
+      feedbackSuccessMessage: 'Geri bildirimin basariyla gonderildi.',
+      feedbackErrorTitle: 'Geri Bildirim Hatasi',
+      feedbackErrorMessage: 'Geri bildirimin su anda gonderilemedi.',
+      feedbackDailyLimitTitle: 'Gunluk Limit Doldu',
+      feedbackDailyLimitMessage: 'Gunde en fazla 5 geri bildirim gonderebilirsin.',
+      feedbackRemaining: 'Bugun kalan: {{remaining}} / {{limit}}',
+      feedbackNoPersonalInfo: 'E-posta, isim veya kisisel veri istemiyoruz.',
+      feedbackCategoryLabel: 'Kategori',
+      feedbackCategories: {
+        complaint: 'Sikayet',
+        suggestion: 'Oneri',
+        question: 'Soru',
+        other: 'Diger',
+      },
       progress: 'İlerleme',
       progressCopy: 'Yerel ilerlemeyi, açılan bölümleri, yıldızları ve kayıtlı en iyi skorları sıfırla.',
       campaignTools: 'Parkur Araçları',

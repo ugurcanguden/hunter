@@ -20,8 +20,11 @@ import {
 import { useCampaignStore } from '@centerhit-features/campaign/store/useCampaignStore';
 import { levelService } from '@centerhit-features/levels/services/levelService';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
+import { useMenuBackgroundMusic } from '@centerhit-game/hooks/useMenuBackgroundMusic';
 
 export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
+  useMenuBackgroundMusic();
+
   const { t } = useI18n();
   const { theme } = useTheme();
   const progress = useProgressStore(state => state.progress);

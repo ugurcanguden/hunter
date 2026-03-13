@@ -1,5 +1,5 @@
-import React from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ScreenProps } from '@centerhit-app/navigation/navigationTypes';
 import { ROUTES } from '@centerhit-app/navigation/routeNames';
@@ -7,12 +7,18 @@ import { CoreButton } from '@centerhit-components/common/CoreButton';
 import { CoreCard } from '@centerhit-components/common/CoreCard';
 import { CoreIcon, CoreIconName } from '@centerhit-components/common/CoreIcon';
 import { CoreIconButton } from '@centerhit-components/common/CoreIconButton';
+import { CoreModal } from '@centerhit-components/common/CoreModal';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
 import { useTheme } from '@centerhit-core/theme/useTheme';
+import { feedbackService } from '@centerhit-features/feedback/services/feedbackService';
+import { FeedbackCategory } from '@centerhit-features/feedback/types/feedbackTypes';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
 import { useSettingsStore } from '@centerhit-features/settings/store/useSettingsStore';
+import { useMenuBackgroundMusic } from '@centerhit-game/hooks/useMenuBackgroundMusic';
+
+const feedbackCategories: FeedbackCategory[] = ['complaint', 'suggestion', 'question', 'other'];
 
 function SettingsRow({
   icon,
@@ -63,6 +69,8 @@ function SettingsRow({
 }
 
 export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
+  useMenuBackgroundMusic();
+
   const { t } = useI18n();
   const { theme } = useTheme();
   const settings = useSettingsStore(state => state.settings);
@@ -73,6 +81,31 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
   const setDiscoverFlags = useSettingsStore(state => state.setDiscoverFlags);
   const resetProgress = useProgressStore(state => state.resetProgress);
   const unlockAllDev = useProgressStore(state => state.unlockAllDev);
+  const [feedbackCategory, setFeedbackCategory] = useState<FeedbackCategory>('complaint');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [remainingFeedback, setRemainingFeedback] = useState(5);
+  const [feedbackLimit, setFeedbackLimit] = useState(5);
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+  const [isFeedbackCategoryModalVisible, setIsFeedbackCategoryModalVisible] = useState(false);
+
+  const feedbackRemainingLabel = useMemo(
+    () =>
+      t.settings.feedbackRemaining
+        .replace('{{remaining}}', `${remainingFeedback}`)
+        .replace('{{limit}}', `${feedbackLimit}`),
+    [feedbackLimit, remainingFeedback, t.settings.feedbackRemaining],
+  );
+
+  useEffect(() => {
+    feedbackService
+      .getDailyStatus()
+      .then(status => {
+        setRemainingFeedback(status.remaining);
+        setFeedbackLimit(status.limit);
+      })
+      .catch(() => undefined);
+  }, []);
+
   const handleToggleSound = () => {
     toggleSound().catch(() => undefined);
   };
@@ -104,6 +137,45 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
       hasSeenDiscover: false,
       hasSeenGameplayDiscover: false,
     }).catch(() => undefined);
+  };
+  const handleSubmitFeedback = async () => {
+    const trimmedMessage = feedbackMessage.trim();
+
+    if (!trimmedMessage) {
+      Alert.alert(t.settings.feedbackErrorTitle, t.settings.feedbackErrorMessage);
+      return;
+    }
+
+    if (remainingFeedback <= 0) {
+      Alert.alert(t.settings.feedbackDailyLimitTitle, t.settings.feedbackDailyLimitMessage);
+      return;
+    }
+
+    setIsSubmittingFeedback(true);
+
+    try {
+      await feedbackService.submitFeedback({
+        category: feedbackCategory,
+        message: trimmedMessage,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Daily feedback limit reached.') {
+        Alert.alert(t.settings.feedbackDailyLimitTitle, t.settings.feedbackDailyLimitMessage);
+        setIsSubmittingFeedback(false);
+        return;
+      }
+    } finally {
+      const status = await feedbackService.getDailyStatus().catch(() => null);
+      if (status) {
+        setRemainingFeedback(status.remaining);
+        setFeedbackLimit(status.limit);
+      }
+      setFeedbackMessage('');
+      setFeedbackCategory('complaint');
+      setIsSubmittingFeedback(false);
+    }
+
+    Alert.alert(t.settings.feedbackSuccessTitle, t.settings.feedbackSuccessMessage);
   };
 
   return (
@@ -214,6 +286,91 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
         />
       </CoreCard>
 
+      <CoreCard variant="soft" style={styles.sectionCard}>
+        <View style={styles.progressHeader}>
+          <View style={[styles.progressIconWrap, { backgroundColor: theme.colors.stageGlow }]}>
+            <CoreIcon name="information-circle" size={20} color={theme.colors.accentPrimary} />
+          </View>
+          <View style={styles.feedbackHeaderCopy}>
+            <CoreText variant="title">{t.settings.feedback}</CoreText>
+            <CoreText variant="caption" colorRole="textSecondary" style={styles.feedbackHeaderHint}>
+              {feedbackRemainingLabel}
+            </CoreText>
+          </View>
+        </View>
+
+        <CoreText variant="body" colorRole="textSecondary" style={styles.feedbackCopy}>
+          {t.settings.feedbackCopy}
+        </CoreText>
+        <CoreText variant="caption" colorRole="accentPrimary" style={styles.feedbackPrivacy}>
+          {t.settings.feedbackNoPersonalInfo}
+        </CoreText>
+
+        <CoreText variant="caption" colorRole="textSecondary" style={styles.feedbackLabel}>
+          {t.settings.feedbackCategoryLabel}
+        </CoreText>
+        <View
+          style={[
+            styles.feedbackDropdownButton,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.borderSoft,
+            },
+          ]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setIsFeedbackCategoryModalVisible(true)}
+            style={({ pressed }) => [
+              styles.feedbackDropdownAction,
+              { opacity: pressed ? 0.84 : 1 },
+            ]}>
+            <CoreText variant="bodyStrong">
+              {t.settings.feedbackCategories[feedbackCategory]}
+            </CoreText>
+          </Pressable>
+          <CoreIcon
+            name="chevron-down"
+            size={18}
+            color={theme.colors.textSecondary}
+          />
+        </View>
+
+        <CoreText variant="caption" colorRole="textSecondary" style={styles.feedbackLabel}>
+          {t.settings.feedbackMessageLabel}
+        </CoreText>
+        <TextInput
+          value={feedbackMessage}
+          onChangeText={setFeedbackMessage}
+          multiline
+          maxLength={600}
+          placeholder={t.settings.feedbackMessagePlaceholder}
+          placeholderTextColor={theme.colors.textSecondary}
+          style={[
+            styles.feedbackMessageInput,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.borderSoft,
+              color: theme.colors.textPrimary,
+            },
+          ]}
+        />
+
+        <View style={styles.feedbackFooterRow}>
+          <CoreText variant="caption" colorRole="textSecondary">
+            {feedbackMessage.trim().length}/600
+          </CoreText>
+          {isSubmittingFeedback ? (
+            <ActivityIndicator color={theme.colors.accentPrimary} size="small" />
+          ) : null}
+        </View>
+
+        <CoreButton
+          label={isSubmittingFeedback ? t.settings.feedbackSending : t.settings.feedbackSubmit}
+          onPress={handleSubmitFeedback}
+          style={styles.feedbackSubmitButton}
+        />
+      </CoreCard>
+
       <CoreCard variant="default" style={[styles.sectionCard, styles.dangerCard, styles.dangerCardBorder]}>
         <View style={styles.progressHeader}>
           <View style={[styles.progressIconWrap, styles.progressIconDanger]}>
@@ -259,6 +416,28 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
       <CoreText variant="caption" colorRole="accentPrimary" style={styles.footerMark}>
         CENTER HIT SYSTEM V1.0.4
       </CoreText>
+
+      <CoreModal
+        visible={isFeedbackCategoryModalVisible}
+        onDismiss={() => setIsFeedbackCategoryModalVisible(false)}>
+        <CoreText variant="title" style={styles.feedbackModalTitle}>
+          {t.settings.feedbackCategoryLabel}
+        </CoreText>
+        <View style={styles.feedbackModalList}>
+          {feedbackCategories.map(category => (
+            <CoreButton
+              key={category}
+              label={t.settings.feedbackCategories[category]}
+              onPress={() => {
+                setFeedbackCategory(category);
+                setIsFeedbackCategoryModalVisible(false);
+              }}
+              variant={feedbackCategory === category ? 'primary' : 'control'}
+              style={styles.feedbackModalButton}
+            />
+          ))}
+        </View>
+      </CoreModal>
     </CoreScreen>
   );
 }
@@ -378,6 +557,69 @@ const styles = StyleSheet.create({
   },
   discoverButton: {
     marginTop: 6,
+  },
+  feedbackHeaderCopy: {
+    flex: 1,
+  },
+  feedbackHeaderHint: {
+    marginTop: 4,
+  },
+  feedbackCopy: {
+    lineHeight: 24,
+    marginBottom: 10,
+    marginTop: 16,
+  },
+  feedbackPrivacy: {
+    letterSpacing: 0.4,
+    marginBottom: 14,
+  },
+  feedbackLabel: {
+    marginBottom: 8,
+    marginTop: 10,
+    textTransform: 'uppercase',
+  },
+  feedbackDropdownButton: {
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    minHeight: 54,
+    paddingRight: 16,
+  },
+  feedbackDropdownAction: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 52,
+    paddingHorizontal: 16,
+  },
+  feedbackMessageInput: {
+    borderRadius: 18,
+    borderWidth: 1,
+    minHeight: 140,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    textAlignVertical: 'top',
+  },
+  feedbackFooterRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  feedbackSubmitButton: {
+    marginTop: 14,
+    minHeight: 58,
+  },
+  feedbackModalTitle: {
+    marginBottom: 14,
+  },
+  feedbackModalList: {
+    gap: 10,
+  },
+  feedbackModalButton: {
+    minHeight: 52,
   },
   progressHeader: {
     alignItems: 'center',

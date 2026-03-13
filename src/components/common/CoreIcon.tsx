@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Check,
+  ChevronDown,
   ChevronLeft,
   Circle,
   Globe,
@@ -20,6 +21,7 @@ import {
 
 export type CoreIconName =
   | 'chevron-back'
+  | 'chevron-down'
   | 'pause'
   | 'play'
   | 'star'
@@ -46,6 +48,8 @@ export function CoreIcon({ name, size = 20, color }: CoreIconProps) {
   switch (name) {
     case 'chevron-back':
       return <ChevronLeft size={size} color={color} strokeWidth={2.4} />;
+    case 'chevron-down':
+      return <ChevronDown size={size} color={color} strokeWidth={2.4} />;
     case 'pause':
       return <Pause size={size} color={color} strokeWidth={2.4} />;
     case 'play':

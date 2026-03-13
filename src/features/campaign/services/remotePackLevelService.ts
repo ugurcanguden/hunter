@@ -118,7 +118,9 @@ export const remotePackLevelService = {
       validateLevelsForPack(pack, levels);
       return levels;
     } catch (error) {
-      console.warn(`[campaign] remote levels fetch failed for ${pack.packId}`, error);
+      if (__DEV__) {
+        console.warn(`[campaign] remote levels fetch failed for ${pack.packId}`, error);
+      }
       return [];
     }
   },

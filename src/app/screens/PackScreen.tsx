@@ -15,6 +15,7 @@ import { resolvePlayableLevelId } from '@centerhit-core/utils/progress';
 import { useCampaignStore } from '@centerhit-features/campaign/store/useCampaignStore';
 import { LevelDefinition } from '@centerhit-features/levels/types/levelTypes';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
+import { useMenuBackgroundMusic } from '@centerhit-game/hooks/useMenuBackgroundMusic';
 
 function PackLevelTile({
   isCurrent,
@@ -115,6 +116,8 @@ function PackLevelTile({
 }
 
 export function PackScreen({ navigation, route }: ScreenProps<'Pack'>) {
+  useMenuBackgroundMusic();
+
   const { t } = useI18n();
   const { theme } = useTheme();
   const pack = useCampaignStore(state => state.getPackById(route.params.packId));

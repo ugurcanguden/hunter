@@ -25,7 +25,9 @@ function attachPersistentListeners(instance: InterstitialAd) {
     useAdsStore.getState().setInterstitialLoaded(true);
   });
   unsubscribeError = instance.addAdEventListener(AdEventType.ERROR, error => {
-    console.warn('[ads] interstitial load error', error);
+    if (__DEV__) {
+      console.warn('[ads] interstitial load error', error);
+    }
     useAdsStore.getState().setInterstitialLoaded(false);
   });
 }
@@ -37,7 +39,9 @@ function ensureInterstitial(): InterstitialAd | null {
 
   const unitId = getAdUnitId('level_complete_interstitial');
   if (!unitId) {
-    console.warn('[ads] missing interstitial unit id');
+    if (__DEV__) {
+      console.warn('[ads] missing interstitial unit id');
+    }
     return null;
   }
 
@@ -62,7 +66,9 @@ export const interstitialService = {
     try {
       instance.load();
     } catch (error) {
-      console.warn('[ads] interstitial load failed', error);
+      if (__DEV__) {
+        console.warn('[ads] interstitial load failed', error);
+      }
     }
   },
 
@@ -97,14 +103,18 @@ export const interstitialService = {
 
     unsubscribeClosed = instance.addAdEventListener(AdEventType.CLOSED, finish);
     unsubscribeShowError = instance.addAdEventListener(AdEventType.ERROR, error => {
-      console.warn('[ads] interstitial show failed', error);
+      if (__DEV__) {
+        console.warn('[ads] interstitial show failed', error);
+      }
       finish();
     });
 
     try {
       await instance.show();
     } catch (error) {
-      console.warn('[ads] interstitial show threw', error);
+      if (__DEV__) {
+        console.warn('[ads] interstitial show threw', error);
+      }
       finish();
     }
   },

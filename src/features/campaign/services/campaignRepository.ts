@@ -56,7 +56,9 @@ export const campaignRepository = {
 
       return mergePacks(cached?.packs ?? []);
     } catch (error) {
-      console.warn('[campaign] loadCampaignPacks fallback', error);
+      if (__DEV__) {
+        console.warn('[campaign] loadCampaignPacks fallback', error);
+      }
       return localCampaignPacks;
     }
   },
@@ -73,7 +75,9 @@ export const campaignRepository = {
 
       return cached?.byPackId[packId] ?? null;
     } catch (error) {
-      console.warn(`[campaign] getCachedPackLevels failed for ${packId}`, error);
+      if (__DEV__) {
+        console.warn(`[campaign] getCachedPackLevels failed for ${packId}`, error);
+      }
       return null;
     }
   },
@@ -105,7 +109,9 @@ export const campaignRepository = {
 
       return levelsForPack;
     } catch (error) {
-      console.warn(`[campaign] refreshPackLevels fallback for ${pack.packId}`, error);
+      if (__DEV__) {
+        console.warn(`[campaign] refreshPackLevels fallback for ${pack.packId}`, error);
+      }
       return [];
     }
   },

@@ -1,0 +1,4 @@
+storeFile=../keystores/centerhit-upload.keystore
+storePassword=change-me
+keyAlias=centerhit-upload
+keyPassword=change-me

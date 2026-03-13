@@ -70,7 +70,9 @@ export const remotePackService = {
       const items = payload.items ?? [];
       return filterValidPacks(items.map(mapPackRecord));
     } catch (error) {
-      console.warn('[campaign] remote packs fetch failed', error);
+      if (__DEV__) {
+        console.warn('[campaign] remote packs fetch failed', error);
+      }
       return [];
     }
   },

@@ -28,7 +28,9 @@ export function AppBannerAd({ placement }: AppBannerAdProps) {
         unitId={unitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         onAdFailedToLoad={error => {
-          console.warn(`[ads] banner failed (${placement})`, error);
+          if (__DEV__) {
+            console.warn(`[ads] banner failed (${placement})`, error);
+          }
         }}
       />
     </View>

@@ -19,8 +19,11 @@ import {
 import { useCampaignStore } from '@centerhit-features/campaign/store/useCampaignStore';
 import { levelService } from '@centerhit-features/levels/services/levelService';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
+import { useMenuBackgroundMusic } from '@centerhit-game/hooks/useMenuBackgroundMusic';
 
 export function LevelsScreen({ navigation }: ScreenProps<'Levels'>) {
+  useMenuBackgroundMusic();
+
   const { t } = useI18n();
   const { theme } = useTheme();
   const packs = useCampaignStore(state => state.packs);

@@ -23,7 +23,9 @@ export const adsBootstrapService = {
       interstitialService.loadInterstitial();
       initialized = true;
     } catch (error) {
-      console.warn('[ads] initialize failed', error);
+      if (__DEV__) {
+        console.warn('[ads] initialize failed', error);
+      }
     }
   },
 };

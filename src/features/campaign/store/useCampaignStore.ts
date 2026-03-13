@@ -57,7 +57,9 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
       const packs = await campaignRepository.loadCampaignPacks();
       set({ packs, isLoaded: true, isRefreshing: false });
     } catch (error) {
-      console.warn('[campaign] loadCampaign failed', error);
+      if (__DEV__) {
+        console.warn('[campaign] loadCampaign failed', error);
+      }
       set({ packs: localCampaignPacks, isLoaded: true, isRefreshing: false });
     }
   },
@@ -75,7 +77,9 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
         await get().refreshPackLevels(packId);
       }
     } catch (error) {
-      console.warn('[campaign] refreshCampaign failed', error);
+      if (__DEV__) {
+        console.warn('[campaign] refreshCampaign failed', error);
+      }
     }
   },
 
@@ -124,7 +128,9 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
           );
       }
     } catch (error) {
-      console.warn(`[campaign] loadPackLevels failed for ${packId}`, error);
+      if (__DEV__) {
+        console.warn(`[campaign] loadPackLevels failed for ${packId}`, error);
+      }
     }
   },
 
@@ -160,7 +166,9 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
           );
       }
     } catch (error) {
-      console.warn(`[campaign] refreshPackLevels failed for ${packId}`, error);
+      if (__DEV__) {
+        console.warn(`[campaign] refreshPackLevels failed for ${packId}`, error);
+      }
     }
   },
 

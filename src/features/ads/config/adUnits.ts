@@ -4,20 +4,20 @@ import { TestIds } from 'react-native-google-mobile-ads';
 import { AdPlacement, AdUnitMap } from '@centerhit-features/ads/types/adTypes';
 
 const IOS_APP_ID = 'ca-app-pub-9339461513261360~3410288316';
-const ANDROID_APP_ID = 'ca-app-pub-3940256099942544~3347511713';
+const ANDROID_APP_ID = 'ca-app-pub-9339461513261360~9653538122';
 
 const PRODUCTION_UNITS: AdUnitMap = {
   home_banner: {
     ios: 'ca-app-pub-9339461513261360/1905634953',
-    android: '',
+    android: 'ca-app-pub-9339461513261360/7459663200',
   },
   campaign_banner: {
     ios: 'ca-app-pub-9339461513261360/8040778403',
-    android: '',
+    android: 'ca-app-pub-9339461513261360/3735073012',
   },
   level_complete_interstitial: {
     ios: 'ca-app-pub-9339461513261360/7633079718',
-    android: '',
+    android: 'ca-app-pub-9339461513261360/4402255026',
   },
 };
 

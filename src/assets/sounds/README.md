@@ -1,4 +1,4 @@
-Expected optional sound assets for `react-native-sound-player` native bundle playback:
+Expected optional sound assets for gameplay effects and menu music:
 
 - `shoot.mp3`
 - `good-hit.mp3`
@@ -8,4 +8,4 @@ Expected optional sound assets for `react-native-sound-player` native bundle pla
 - `level-complete.mp3`
 - `level-fail.mp3`
 
-If these files are not bundled into the native app, gameplay feedback stays silent without crashing.
+If these files are not bundled into the app, gameplay feedback stays silent without crashing.

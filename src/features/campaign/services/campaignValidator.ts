@@ -57,7 +57,9 @@ export function filterValidPacks(records: readonly RemotePackRecord[]) {
     validatePacks(packs);
     return packs;
   } catch (error) {
-    console.warn('[campaign] invalid remote pack set ignored', error);
+    if (__DEV__) {
+      console.warn('[campaign] invalid remote pack set ignored', error);
+    }
     return [] as CampaignPackDefinition[];
   }
 }

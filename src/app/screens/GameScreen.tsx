@@ -23,11 +23,14 @@ import { useProgressStore } from '@centerhit-features/progress/store/useProgress
 import { useSettingsStore } from '@centerhit-features/settings/store/useSettingsStore';
 import { gameDefaults } from '@centerhit-game/config/gameDefaults';
 import { useGameFeedbackEffects } from '@centerhit-game/hooks/useGameFeedbackEffects';
+import { useGameplayBackgroundMusicBlock } from '@centerhit-game/hooks/useGameplayBackgroundMusicBlock';
 import { useGameSession } from '@centerhit-game/hooks/useGameSession';
 import { buildObjectiveSummary } from '@centerhit-game/systems/objectiveSystem';
 import { getNextStarProgress } from '@centerhit-game/systems/scoringSystem';
 
 export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
+  useGameplayBackgroundMusicBlock();
+
   const { t } = useI18n();
   const { theme } = useTheme();
   const [pauseVisible, setPauseVisible] = useState(false);

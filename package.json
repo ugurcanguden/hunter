@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "android:bundle:release": "cd android && gradlew.bat bundleRelease",
     "ios": "react-native run-ios",
     "lint": "eslint .",
+    "postinstall": "node scripts/apply-react-native-sound-android-patch.js",
     "start": "react-native start",
     "test": "jest",
     "typecheck": "tsc --noEmit"
@@ -22,7 +24,6 @@
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "^4.24.0",
     "react-native-sound": "^0.13.0",
-    "react-native-sound-player": "^0.14.5",
     "react-native-svg": "^15.15.3",
     "zustand": "^5.0.11"
   },
