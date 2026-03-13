@@ -3,8 +3,10 @@ import { LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 
 import { ScreenProps } from '@centerhit-app/navigation/navigationTypes';
 import { ROUTES } from '@centerhit-app/navigation/routeNames';
+import { CoreButton } from '@centerhit-components/common/CoreButton';
 import { CoreCard } from '@centerhit-components/common/CoreCard';
 import { CoreIcon } from '@centerhit-components/common/CoreIcon';
+import { CoreModal } from '@centerhit-components/common/CoreModal';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { GameOverModal } from '@centerhit-components/game/GameOverModal';
@@ -18,6 +20,7 @@ import { useLevelCompleteInterstitial } from '@centerhit-features/ads/hooks/useL
 import { useAdsStore } from '@centerhit-features/ads/store/useAdsStore';
 import { levelService } from '@centerhit-features/levels/services/levelService';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
+import { useSettingsStore } from '@centerhit-features/settings/store/useSettingsStore';
 import { gameDefaults } from '@centerhit-game/config/gameDefaults';
 import { useGameFeedbackEffects } from '@centerhit-game/hooks/useGameFeedbackEffects';
 import { useGameSession } from '@centerhit-game/hooks/useGameSession';
@@ -28,13 +31,22 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
   const { t } = useI18n();
   const { theme } = useTheme();
   const [pauseVisible, setPauseVisible] = useState(false);
+  const [gameTutorialStep, setGameTutorialStep] = useState(0);
+  const [isGameplayTutorialVisible, setIsGameplayTutorialVisible] = useState(false);
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   const progress = useProgressStore(state => state.progress);
   const setLastPlayedLevel = useProgressStore(state => state.setLastPlayedLevel);
   const saveLevelResult = useProgressStore(state => state.saveLevelResult);
+  const hasSeenGameplayDiscover = useSettingsStore(
+    state => state.settings.hasSeenGameplayDiscover,
+  );
+  const setHasSeenGameplayDiscover = useSettingsStore(
+    state => state.setHasSeenGameplayDiscover,
+  );
   const markLevelCompleted = useAdsStore(state => state.markLevelCompleted);
   const hasSavedCompletionRef = useRef(false);
   const hasCountedCompletionRef = useRef(false);
+  const tutorialDecisionRef = useRef(false);
   const runLevelCompleteAdGate = useLevelCompleteInterstitial();
   const level = useMemo(
     () => levelService.getLevelById(route.params.levelId),
@@ -144,9 +156,6 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
     session.status,
   ]);
 
-  if (!level || !safeLevel) {
-    return null;
-  }
   const nextLevel = levelService.getNextLevel(safeLevel.id);
   const handleExitToHome = () => {
     setPauseVisible(false);
@@ -167,6 +176,10 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
   const projectileSize = Math.max(10, stageSize.width * session.projectile.radius * 2);
   const projectileTrailHeight = projectileSize * gameDefaults.projectileTrailStretch;
   const projectileTrailWidth = projectileSize * gameDefaults.projectileTrailWidthFactor;
+  const perfectZoneSize = Math.max(
+    10,
+    Math.min(targetWidth, targetHeight) * (gameDefaults.perfectHitThresholdRatio * 1.9),
+  );
   const feedbackTitle =
     session.feedback.type === 'perfect'
       ? t.game.perfect
@@ -207,6 +220,58 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
     session.canShoot &&
     !session.projectile.isActive &&
     session.objectiveProgress.remainingShots > 0;
+  const gameplayTutorialSteps = [
+    {
+      title: t.game.tutorialSteps.targetTitle,
+      copy: t.game.tutorialSteps.targetCopy,
+    },
+    {
+      title: t.game.tutorialSteps.objectiveTitle,
+      copy: `${t.game.tutorialSteps.objectiveCopy} ${objectiveSummary.hits} • ${objectiveSummary.mistakes} • ${objectiveSummary.shots}`,
+    },
+    {
+      title: t.game.tutorialSteps.obstacleTitle,
+      copy: t.game.tutorialSteps.obstacleCopy,
+    },
+  ];
+  const tutorialStep = gameplayTutorialSteps[gameTutorialStep]!;
+  const isLastTutorialStep = gameTutorialStep === gameplayTutorialSteps.length - 1;
+
+  useEffect(() => {
+    tutorialDecisionRef.current = false;
+    setGameTutorialStep(0);
+    setIsGameplayTutorialVisible(false);
+  }, [level?.id]);
+
+  useEffect(() => {
+    if (!level || level.order !== 1) {
+      return;
+    }
+
+    if (tutorialDecisionRef.current) {
+      return;
+    }
+
+    tutorialDecisionRef.current = true;
+
+    if (hasSeenGameplayDiscover) {
+      return;
+    }
+
+    setIsGameplayTutorialVisible(true);
+    pause();
+  }, [hasSeenGameplayDiscover, level, pause]);
+
+  const closeGameplayTutorial = () => {
+    setHasSeenGameplayDiscover(true).catch(() => undefined);
+    setGameTutorialStep(0);
+    setIsGameplayTutorialVisible(false);
+    resume();
+  };
+
+  if (!level || !safeLevel) {
+    return null;
+  }
 
   return (
     <CoreScreen contentStyle={styles.container}>
@@ -498,6 +563,28 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                 />
                 <View
                   style={[
+                    styles.targetPerfectRing,
+                    {
+                      borderColor: theme.colors.perfectHit,
+                      height: perfectZoneSize,
+                      opacity: targetFlashActive ? 0.95 : 0.72,
+                      width: perfectZoneSize,
+                    },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.targetPerfectCore,
+                    {
+                      backgroundColor: theme.colors.perfectHit,
+                      height: perfectZoneSize * 0.42,
+                      opacity: targetFlashActive ? 0.88 : 0.62,
+                      width: perfectZoneSize * 0.42,
+                    },
+                  ]}
+                />
+                <View
+                  style={[
                     styles.targetHighlight,
                     {
                       backgroundColor: theme.colors.backgroundPrimary,
@@ -617,6 +704,44 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
           />
         ) : null}
       </View>
+
+      <CoreModal
+        visible={isGameplayTutorialVisible}
+        onDismiss={() => undefined}>
+        <CoreText variant="title" align="center">
+          {t.game.tutorialTitle}
+        </CoreText>
+        <CoreText variant="caption" colorRole="textSecondary" align="center" style={styles.tutorialCounter}>
+          {t.game.tutorialStep} {gameTutorialStep + 1}/{gameplayTutorialSteps.length}
+        </CoreText>
+        <View style={styles.tutorialBody}>
+          <CoreText variant="subtitle" align="center">
+            {tutorialStep.title}
+          </CoreText>
+          <CoreText variant="body" colorRole="textSecondary" align="center" style={styles.tutorialCopy}>
+            {tutorialStep.copy}
+          </CoreText>
+        </View>
+        <View style={styles.tutorialActions}>
+          <CoreButton
+            label={t.game.tutorialSkip}
+            onPress={closeGameplayTutorial}
+            variant="ghost"
+          />
+          <CoreButton
+            label={isLastTutorialStep ? t.game.tutorialDone : t.game.tutorialNext}
+            onPress={() => {
+              if (!isLastTutorialStep) {
+                setGameTutorialStep(prev => prev + 1);
+                return;
+              }
+
+              closeGameplayTutorial();
+            }}
+          />
+        </View>
+      </CoreModal>
+
       <PauseModal
         visible={pauseVisible}
         onDismiss={() => setPauseVisible(false)}
@@ -732,6 +857,15 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     height: '52%',
     width: '58%',
+  },
+  targetPerfectRing: {
+    borderRadius: 999,
+    borderWidth: 1.5,
+    position: 'absolute',
+  },
+  targetPerfectCore: {
+    borderRadius: 999,
+    position: 'absolute',
   },
   targetHighlight: {
     borderRadius: 999,
@@ -933,5 +1067,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 10,
     paddingVertical: 10,
+  },
+  tutorialCounter: {
+    marginTop: 8,
+  },
+  tutorialBody: {
+    marginTop: 14,
+  },
+  tutorialCopy: {
+    marginTop: 8,
+  },
+  tutorialActions: {
+    gap: 10,
+    marginTop: 16,
   },
 });

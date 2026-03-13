@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppNavigator } from '@centerhit-app/navigation/AppNavigator';
 import { BootstrapGate } from '@centerhit-app/providers/BootstrapGate';
+import { DiscoverGate } from '@centerhit-app/providers/DiscoverGate';
 import { ThemeProvider } from '@centerhit-core/theme/ThemeProvider';
 import { adsBootstrapService } from '@centerhit-features/ads/services/adsBootstrapService';
 import { useBackgroundMusicEffects } from '@centerhit-game/hooks/useBackgroundMusicEffects';
@@ -32,6 +33,7 @@ export function AppProviders({ children }: PropsWithChildren) {
             <BackgroundMusicController />
             <AdsController />
             <AppNavigator />
+            <DiscoverGate />
             {children}
           </BootstrapGate>
         </ThemeProvider>

@@ -5,6 +5,8 @@ export type SettingsState = {
   musicEnabled: boolean;
   vibrationEnabled: boolean;
   language: AppLanguage;
+  hasSeenDiscover: boolean;
+  hasSeenGameplayDiscover: boolean;
 };
 
 export type UpdateSettingsInput = Partial<SettingsState>;

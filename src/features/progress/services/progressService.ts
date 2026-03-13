@@ -159,6 +159,26 @@ export const progressService = {
     return defaultProgress;
   },
 
+  async unlockAllDev(): Promise<ProgressState> {
+    const progress = await this.getProgress();
+    const campaignState = useCampaignStore.getState();
+    const allPackIds = campaignState.packs.map(pack => pack.packId);
+    const allLevelIds = campaignState
+      .getAllLoadedLevels()
+      .map(level => level.id);
+    const fallbackLastPlayedLevelId = allLevelIds[0] ?? DEFAULT_LEVEL_ID;
+
+    const nextProgress: ProgressState = {
+      ...progress,
+      unlockedPackIds: Array.from(new Set([...progress.unlockedPackIds, ...allPackIds])),
+      unlockedLevelIds: Array.from(new Set([...progress.unlockedLevelIds, ...allLevelIds])),
+      lastPlayedLevelId: progress.lastPlayedLevelId ?? fallbackLastPlayedLevelId,
+    };
+
+    await this.saveProgress(nextProgress);
+    return nextProgress;
+  },
+
   async syncUnlockedLevelsForPack(packId: string, levelIds: string[]): Promise<ProgressState> {
     const progress = await this.getProgress();
 

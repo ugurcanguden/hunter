@@ -51,8 +51,7 @@ type SoundPlayerModule = {
 };
 
 const backgroundMusicTracks = [
-  require('../../assets/sounds/background/Neon_Nexus_Pulse.mp3'),
-  require('../../assets/sounds/background/Neon_Overture.mp3'),
+  require('../../assets/sounds/background/Neon_Nexus_Pulse.mp3'), 
   require('../../assets/sounds/background/Neon_Pulse_Drive.mp3'),
   require('../../assets/sounds/background/bgm.mp3'),
 ] as const;

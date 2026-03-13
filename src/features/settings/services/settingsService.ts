@@ -10,13 +10,22 @@ export const defaultSettings: SettingsState = {
   musicEnabled: true,
   vibrationEnabled: true,
   language: 'en',
+  hasSeenDiscover: false,
+  hasSeenGameplayDiscover: false,
 };
 
 export const settingsService = {
   async getSettings(): Promise<SettingsState> {
     const stored = await storageClient.getItem<SettingsState>(STORAGE_KEYS.settings);
 
-    return stored ?? defaultSettings;
+    if (!stored) {
+      return defaultSettings;
+    }
+
+    return {
+      ...defaultSettings,
+      ...stored,
+    };
   },
 
   async saveSettings(settings: SettingsState) {

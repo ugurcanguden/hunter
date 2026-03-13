@@ -4,8 +4,8 @@ export const localCampaignPacks: CampaignPackDefinition[] = [
   {
     packId: 'pack-01',
     order: 1,
-    title: 'Starter Circuit',
-    subtitle: 'Learn the rhythm',
+    title: 'Easy Parkur',
+    subtitle: 'Foundations and timing basics',
     coverTone: 'cyan',
     levelCount: 10,
     startOrder: 1,
@@ -16,8 +16,8 @@ export const localCampaignPacks: CampaignPackDefinition[] = [
   {
     packId: 'pack-02',
     order: 2,
-    title: 'Neon Trials',
-    subtitle: 'New chapters unlock here',
+    title: 'Medium Parkur',
+    subtitle: 'Faster rhythm and tighter windows',
     coverTone: 'amber',
     levelCount: 10,
     startOrder: 11,
@@ -28,8 +28,8 @@ export const localCampaignPacks: CampaignPackDefinition[] = [
   {
     packId: 'pack-03',
     order: 3,
-    title: 'Pulse Frontier',
-    subtitle: 'Remote content will expand this pack',
+    title: 'Hard Parkur',
+    subtitle: 'High precision and obstacle pressure',
     coverTone: 'red',
     levelCount: 10,
     startOrder: 21,

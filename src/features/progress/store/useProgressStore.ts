@@ -19,6 +19,7 @@ type ProgressStore = {
   saveLevelResult: (input: SaveLevelResultInput) => Promise<void>;
   setLastPlayedLevel: (levelId: string) => Promise<void>;
   resetProgress: () => Promise<void>;
+  unlockAllDev: () => Promise<void>;
   syncUnlockedLevelsForPack: (packId: string, levelIds: string[]) => Promise<void>;
   getLevelRecord: (levelId: string) => LevelProgressRecord | undefined;
   getLevelStars: (levelId: string) => number;
@@ -53,6 +54,11 @@ export const useProgressStore = create<ProgressStore>((set, get) => ({
 
   async resetProgress() {
     const progress = await progressService.resetProgress();
+    set({ progress });
+  },
+
+  async unlockAllDev() {
+    const progress = await progressService.unlockAllDev();
     set({ progress });
   },
 

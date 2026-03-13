@@ -18,6 +18,12 @@ type SettingsStore = {
   toggleMusic: () => Promise<void>;
   toggleVibration: () => Promise<void>;
   setLanguage: (language: AppLanguage) => Promise<void>;
+  setHasSeenDiscover: (seen: boolean) => Promise<void>;
+  setHasSeenGameplayDiscover: (seen: boolean) => Promise<void>;
+  setDiscoverFlags: (flags: {
+    hasSeenDiscover: boolean;
+    hasSeenGameplayDiscover: boolean;
+  }) => Promise<void>;
   resetSettings: () => Promise<void>;
 };
 
@@ -59,6 +65,21 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   async setLanguage(language) {
     const settings = await settingsService.updateSettings({ language });
+    set({ settings });
+  },
+
+  async setHasSeenDiscover(seen) {
+    const settings = await settingsService.updateSettings({ hasSeenDiscover: seen });
+    set({ settings });
+  },
+
+  async setHasSeenGameplayDiscover(seen) {
+    const settings = await settingsService.updateSettings({ hasSeenGameplayDiscover: seen });
+    set({ settings });
+  },
+
+  async setDiscoverFlags(flags) {
+    const settings = await settingsService.updateSettings(flags);
     set({ settings });
   },
 

@@ -80,6 +80,22 @@ type TranslationTree = {
       en: string;
       tr: string;
     };
+    discoverAgain: string;
+  };
+  discover: {
+    title: string;
+    skip: string;
+    next: string;
+    done: string;
+    stepCounter: string;
+    steps: {
+      homeTitle: string;
+      homeCopy: string;
+      packsTitle: string;
+      packsCopy: string;
+      gameTitle: string;
+      gameCopy: string;
+    };
   };
   loader: {
     preparing: string;
@@ -109,6 +125,19 @@ type TranslationTree = {
     failShotsCopy: string;
     nextStarIn: string;
     maxStars: string;
+    tutorialTitle: string;
+    tutorialSkip: string;
+    tutorialNext: string;
+    tutorialDone: string;
+    tutorialStep: string;
+    tutorialSteps: {
+      targetTitle: string;
+      targetCopy: string;
+      objectiveTitle: string;
+      objectiveCopy: string;
+      obstacleTitle: string;
+      obstacleCopy: string;
+    };
   };
 };
 
@@ -193,6 +222,22 @@ export const translations: Record<AppLanguage, TranslationTree> = {
         en: 'English',
         tr: 'Turkish',
       },
+      discoverAgain: 'Show Discover Guide Again',
+    },
+    discover: {
+      title: 'Discover Center Hit',
+      skip: 'Skip',
+      next: 'Next',
+      done: 'Start',
+      stepCounter: 'Step',
+      steps: {
+        homeTitle: 'Home & Continue',
+        homeCopy: 'Use Continue to jump back into your current run quickly.',
+        packsTitle: 'Packs & Unlocks',
+        packsCopy: 'Finish levels to unlock the next pack and open harder stages.',
+        gameTitle: 'Perfect Zone',
+        gameCopy: 'Aim for the bright center of the target for Perfect hits and better score.',
+      },
     },
     loader: {
       preparing: 'Preparing local game systems...',
@@ -222,6 +267,19 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       failShotsCopy: 'Your shot limit is spent. Try a cleaner run.',
       nextStarIn: 'to next star',
       maxStars: 'max stars',
+      tutorialTitle: 'First Run Guide',
+      tutorialSkip: 'Skip',
+      tutorialNext: 'Next',
+      tutorialDone: 'Got it',
+      tutorialStep: 'Step',
+      tutorialSteps: {
+        targetTitle: 'Target & Perfect Zone',
+        targetCopy: 'Hit the target. Shots near the bright center count as Perfect.',
+        objectiveTitle: 'Objective & Chances',
+        objectiveCopy: 'Complete hit goals before your miss and shot limits run out.',
+        obstacleTitle: 'Obstacles',
+        obstacleCopy: 'If your shot hits an obstacle it becomes Blocked and counts like a miss.',
+      },
     },
   },
   tr: {
@@ -304,6 +362,22 @@ export const translations: Record<AppLanguage, TranslationTree> = {
         en: 'İngilizce',
         tr: 'Türkçe',
       },
+      discoverAgain: 'Discover Rehberini Tekrar Göster',
+    },
+    discover: {
+      title: 'Center Hit Keşfi',
+      skip: 'Geç',
+      next: 'İleri',
+      done: 'Başla',
+      stepCounter: 'Adım',
+      steps: {
+        homeTitle: 'Ana Sayfa ve Devam',
+        homeCopy: 'Devam Et ile mevcut koşuna hızlıca geri dönebilirsin.',
+        packsTitle: 'Kutular ve Kilitler',
+        packsCopy: 'Bölümleri bitirerek sonraki kutuyu açar ve daha zor sahnelere geçersin.',
+        gameTitle: 'Mükemmel Alan',
+        gameCopy: 'Daha iyi skor için hedefin parlak merkezine nişan al ve Mükemmel vur.',
+      },
     },
     loader: {
       preparing: 'Yerel oyun sistemleri hazırlanıyor...',
@@ -333,6 +407,19 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       failShotsCopy: 'Atış hakkın tükendi. Daha temiz bir deneme yap.',
       nextStarIn: 'sonraki yıldıza',
       maxStars: 'maks yıldız',
+      tutorialTitle: 'İlk Oyun Rehberi',
+      tutorialSkip: 'Geç',
+      tutorialNext: 'İleri',
+      tutorialDone: 'Anladım',
+      tutorialStep: 'Adım',
+      tutorialSteps: {
+        targetTitle: 'Hedef ve Mükemmel Alan',
+        targetCopy: 'Hedefi vur. Parlak merkeze yakın atışlar Mükemmel sayılır.',
+        objectiveTitle: 'Hedef ve Haklar',
+        objectiveCopy: 'Hata ve atış limitin bitmeden bölüm hedeflerini tamamla.',
+        obstacleTitle: 'Engeller',
+        obstacleCopy: 'Atışın engele çarparsa Engellendi olur ve kaçırma gibi sayılır.',
+      },
     },
   },
 };

@@ -9,12 +9,14 @@ type CoreModalProps = PropsWithChildren<{
   visible: boolean;
   onDismiss: () => void;
   tone?: 'default' | 'success' | 'danger';
+  dismissOnBackdropPress?: boolean;
 }>;
 
 export function CoreModal({
   visible,
   onDismiss,
   tone = 'default',
+  dismissOnBackdropPress = true,
   children,
 }: CoreModalProps) {
   const { theme } = useTheme();
@@ -33,7 +35,9 @@ export function CoreModal({
   return (
     <Modal animationType="fade" transparent visible={visible} onRequestClose={onDismiss}>
       <View style={[styles.overlay, { backgroundColor: theme.colors.overlay }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+        {dismissOnBackdropPress ? (
+          <Pressable style={StyleSheet.absoluteFill} onPress={onDismiss} />
+        ) : null}
         <CoreCard
           variant="panel"
           style={[styles.card, { maxWidth: LAYOUT.modalMaxWidth }, toneStyles]}>

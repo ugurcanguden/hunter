@@ -70,7 +70,9 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
   const toggleMusic = useSettingsStore(state => state.toggleMusic);
   const toggleVibration = useSettingsStore(state => state.toggleVibration);
   const setLanguage = useSettingsStore(state => state.setLanguage);
+  const setDiscoverFlags = useSettingsStore(state => state.setDiscoverFlags);
   const resetProgress = useProgressStore(state => state.resetProgress);
+  const unlockAllDev = useProgressStore(state => state.unlockAllDev);
   const handleToggleSound = () => {
     toggleSound().catch(() => undefined);
   };
@@ -81,11 +83,27 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
     toggleVibration().catch(() => undefined);
   };
   const handleResetProgress = () => {
-    resetProgress().catch(() => undefined);
+    resetProgress()
+      .then(() =>
+        setDiscoverFlags({
+          hasSeenDiscover: false,
+          hasSeenGameplayDiscover: false,
+        }),
+      )
+      .catch(() => undefined);
+  };
+  const handleUnlockAllDev = () => {
+    unlockAllDev().catch(() => undefined);
   };
   const handleToggleLanguage = () => {
     const nextLanguage = settings.language === 'en' ? 'tr' : 'en';
     setLanguage(nextLanguage).catch(() => undefined);
+  };
+  const handleShowDiscoverAgain = () => {
+    setDiscoverFlags({
+      hasSeenDiscover: false,
+      hasSeenGameplayDiscover: false,
+    }).catch(() => undefined);
   };
 
   return (
@@ -187,6 +205,13 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
             style={styles.toggleButton}
           />
         </View>
+        <CoreButton
+          label={t.settings.discoverAgain}
+          onPress={handleShowDiscoverAgain}
+          variant="secondary"
+          compact
+          style={styles.discoverButton}
+        />
       </CoreCard>
 
       <CoreCard variant="default" style={[styles.sectionCard, styles.dangerCard, styles.dangerCardBorder]}>
@@ -215,6 +240,21 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
           style={styles.resetButton}
         />
       </CoreCard>
+
+      {__DEV__ ? (
+        <CoreCard variant="soft" style={styles.devCard}>
+          <CoreText variant="subtitle">Developer Tools</CoreText>
+          <CoreText variant="caption" colorRole="textSecondary" style={styles.devCopy}>
+            Opens all local levels and packs for fast testing.
+          </CoreText>
+          <CoreButton
+            label="Unlock All Levels (DEV)"
+            onPress={handleUnlockAllDev}
+            variant="secondary"
+            style={styles.devButton}
+          />
+        </CoreCard>
+      ) : null}
 
       <CoreText variant="caption" colorRole="accentPrimary" style={styles.footerMark}>
         CENTER HIT SYSTEM V1.0.4
@@ -336,6 +376,9 @@ const styles = StyleSheet.create({
   languageHint: {
     marginTop: 4,
   },
+  discoverButton: {
+    marginTop: 6,
+  },
   progressHeader: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -364,6 +407,18 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     minHeight: 58,
+  },
+  devCard: {
+    borderRadius: 24,
+    marginBottom: 18,
+    paddingVertical: 16,
+  },
+  devCopy: {
+    marginBottom: 12,
+    marginTop: 6,
+  },
+  devButton: {
+    minHeight: 52,
   },
   footerMark: {
     alignSelf: 'center',

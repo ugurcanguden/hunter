@@ -5,6 +5,12 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+# Ensure archive contains full dSYMs for RN/Hermes frameworks.
+# Prebuilt RN frameworks may miss dSYMs in some Xcode/TestFlight uploads.
+ENV['RCT_USE_PREBUILT_RNCORE'] = '0'
+ENV['RCT_USE_RN_DEP'] = '0'
+ENV['RCT_SYMBOLICATE_PREBUILT_FRAMEWORKS'] = '1'
+
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
@@ -30,5 +36,33 @@ target 'CenterHit' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Ensure hermesvm dSYM is generated for App Store upload when using prebuilt Hermes.
+    installer.aggregate_targets.each do |aggregate_target|
+      user_project = aggregate_target.user_project
+      next if user_project.nil?
+
+      user_project.native_targets.each do |native_target|
+        next unless native_target.name == 'CenterHit'
+
+        phase_name = '[CenterHit] Generate Hermes dSYM'
+        script_phase = native_target.shell_script_build_phases.find { |phase| phase.name == phase_name }
+        script_phase ||= native_target.new_shell_script_build_phase(phase_name)
+
+        script_phase.shell_script = <<-'SCRIPT'
+if [ "${CONFIGURATION}" = "Release" ] && [ "${ACTION}" = "install" ]; then
+  HERMES_BIN="${PODS_ROOT}/hermes-engine/destroot/Library/Frameworks/universal/hermesvm.xcframework/ios-arm64/hermesvm.framework/hermesvm"
+  if [ -f "$HERMES_BIN" ]; then
+    HERMES_DSYM="${DWARF_DSYM_FOLDER_PATH}/hermesvm.framework.dSYM"
+    if [ ! -d "$HERMES_DSYM" ]; then
+      xcrun dsymutil "$HERMES_BIN" -o "$HERMES_DSYM"
+    fi
+  fi
+fi
+SCRIPT
+      end
+
+      user_project.save
+    end
   end
 end
