@@ -31,9 +31,7 @@ local.properties
 android/release-signing.properties
 *.iml
 *.hprof
-.cxx/
-*.keystore
-*.jks
+.cxx/ 
 !debug.keystore
 .kotlin/
 .gradle-user-home*/
