@@ -125,7 +125,7 @@ android {
         release {
             if (!hasReleaseSigning) {
                 throw new GradleException(
-                    "Missing Android release signing config. Create android/release-signing.properties from the example file before building release."
+                    "Missing Android release signing config. Fill android/release-signing.properties before building release."
                 )
             }
             signingConfig signingConfigs.release
