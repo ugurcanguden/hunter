@@ -9,6 +9,8 @@ export const defaultSettings: SettingsState = {
   soundEnabled: true,
   musicEnabled: true,
   vibrationEnabled: true,
+  notificationsEnabled: true,
+  lastActiveAt: null,
   language: 'en',
   hasSeenDiscover: false,
   hasSeenGameplayDiscover: false,

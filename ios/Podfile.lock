@@ -2630,6 +2630,11 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNNotifee (9.1.8):
+    - React-Core
+    - RNNotifee/NotifeeCore (= 9.1.8)
+  - RNNotifee/NotifeeCore (9.1.8):
+    - React-Core
   - RNScreens (4.24.0):
     - boost
     - DoubleConversion
@@ -2859,6 +2864,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
+  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -3033,6 +3039,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleMobileAds:
     :path: "../node_modules/react-native-google-mobile-ads"
+  RNNotifee:
+    :path: "../node_modules/@notifee/react-native"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSound:
@@ -3125,6 +3133,7 @@ SPEC CHECKSUMS:
   ReactCommon: 02ee6650471e9c32a201abc0b593e4b0e5d1eede
   RNGestureHandler: 0108b0a14d04c88c382138bea400c111ceb3f79f
   RNGoogleMobileAds: 8802b084849fffd5df2cae19df73ba82a356f281
+  RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNScreens: 7f643ee0fd1407dc5085c7795460bd93da113b8f
   RNSound: d5dd3ca86d9978e1c2736dfa943ba619fc9fc504
   RNSVG: e8de3f46ea4e6e1360c9f5cc8bdbee2b7995132b

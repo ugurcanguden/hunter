@@ -14,6 +14,7 @@ type TranslationTree = {
     sound: string;
     music: string;
     vibration: string;
+    notifications: string;
     on: string;
     off: string;
     open: string;
@@ -102,6 +103,15 @@ type TranslationTree = {
       tr: string;
     };
     discoverAgain: string;
+    notificationsCopy: string;
+    notificationsDeniedTitle: string;
+    notificationsDeniedMessage: string;
+    notificationsPermissionError: string;
+  };
+  notifications: {
+    channelName: string;
+    reminderTitle: string;
+    reminderBody: string;
   };
   discover: {
     title: string;
@@ -177,6 +187,7 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       sound: 'Sound',
       music: 'Music',
       vibration: 'Vibration',
+      notifications: 'Notifications',
       on: 'On',
       off: 'Off',
       open: 'OPEN',
@@ -265,6 +276,15 @@ export const translations: Record<AppLanguage, TranslationTree> = {
         tr: 'Turkish',
       },
       discoverAgain: 'Show Discover Guide Again',
+      notificationsCopy: 'Get one gentle reminder if you have not opened the game for a day.',
+      notificationsDeniedTitle: 'Notifications Disabled',
+      notificationsDeniedMessage: 'Permission was not granted, so reminders stay off.',
+      notificationsPermissionError: 'We could not enable notifications right now.',
+    },
+    notifications: {
+      channelName: 'Return reminders',
+      reminderTitle: 'Ready for another run?',
+      reminderBody: 'You can jump back in where you left off.',
     },
     discover: {
       title: 'Discover Center Hit',
@@ -338,6 +358,7 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       sound: 'Ses Efekti',
       music: 'Müzik',
       vibration: 'Titreşim',
+      notifications: 'Bildirimler',
       on: 'Açık',
       off: 'Kapalı',
       open: 'AÇIK',
@@ -426,6 +447,15 @@ export const translations: Record<AppLanguage, TranslationTree> = {
         tr: 'Türkçe',
       },
       discoverAgain: 'Discover Rehberini Tekrar Göster',
+      notificationsCopy: 'Bir gün oyuna girmediğinde tek bir nazik hatırlatma al.',
+      notificationsDeniedTitle: 'Bildirimler Kapalı',
+      notificationsDeniedMessage: 'İzin verilmediği için hatırlatmalar kapalı kalacak.',
+      notificationsPermissionError: 'Bildirimler şu anda açılamadı.',
+    },
+    notifications: {
+      channelName: 'Geri dönüş hatırlatmaları',
+      reminderTitle: 'Yeni bir denemeye hazır mısın?',
+      reminderBody: 'Kaldığın yerden devam edebilirsin.',
     },
     discover: {
       title: 'Center Hit Keşfi',

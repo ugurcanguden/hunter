@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Check,
+  Bell,
   ChevronDown,
   ChevronLeft,
   Circle,
@@ -35,6 +36,7 @@ export type CoreIconName =
   | 'volume-high-outline'
   | 'musical-note-outline'
   | 'phone-portrait-outline'
+  | 'notifications-outline'
   | 'globe-outline'
   | 'warning-outline';
 
@@ -76,6 +78,8 @@ export function CoreIcon({ name, size = 20, color }: CoreIconProps) {
       return <Music2 size={size} color={color} strokeWidth={2.2} />;
     case 'phone-portrait-outline':
       return <Smartphone size={size} color={color} strokeWidth={2.2} />;
+    case 'notifications-outline':
+      return <Bell size={size} color={color} strokeWidth={2.2} />;
     case 'globe-outline':
       return <Globe size={size} color={color} strokeWidth={2.2} />;
     case 'warning-outline':

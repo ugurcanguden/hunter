@@ -12,6 +12,7 @@ import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
 import { useTheme } from '@centerhit-core/theme/useTheme';
+import { notificationService } from '@centerhit-features/notifications/services/notificationService';
 import { feedbackService } from '@centerhit-features/feedback/services/feedbackService';
 import { FeedbackCategory } from '@centerhit-features/feedback/types/feedbackTypes';
 import { useProgressStore } from '@centerhit-features/progress/store/useProgressStore';
@@ -77,6 +78,7 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
   const toggleSound = useSettingsStore(state => state.toggleSound);
   const toggleMusic = useSettingsStore(state => state.toggleMusic);
   const toggleVibration = useSettingsStore(state => state.toggleVibration);
+  const setNotificationsEnabled = useSettingsStore(state => state.setNotificationsEnabled);
   const setLanguage = useSettingsStore(state => state.setLanguage);
   const setDiscoverFlags = useSettingsStore(state => state.setDiscoverFlags);
   const resetProgress = useProgressStore(state => state.resetProgress);
@@ -115,6 +117,38 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
   const handleToggleVibration = () => {
     toggleVibration().catch(() => undefined);
   };
+  const handleToggleNotifications = async () => {
+    if (settings.notificationsEnabled) {
+      await notificationService.cancelInactiveReminder();
+      await setNotificationsEnabled(false);
+      return;
+    }
+
+    try {
+      const granted = await notificationService.requestPermission();
+
+      if (!granted) {
+        await setNotificationsEnabled(false);
+        Alert.alert(
+          t.settings.notificationsDeniedTitle,
+          t.settings.notificationsDeniedMessage,
+        );
+        return;
+      }
+
+      await setNotificationsEnabled(true);
+      await notificationService.scheduleInactiveReminder({
+        language: settings.language,
+        fromDate: new Date(),
+      });
+    } catch {
+      await setNotificationsEnabled(false);
+      Alert.alert(
+        t.settings.notificationsDeniedTitle,
+        t.settings.notificationsPermissionError,
+      );
+    }
+  };
   const handleResetProgress = () => {
     resetProgress()
       .then(() =>
@@ -127,6 +161,27 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
   };
   const handleUnlockAllDev = () => {
     unlockAllDev().catch(() => undefined);
+  };
+  const handleTestNotification = async () => {
+    try {
+      const hasPermission = await notificationService.hasPermission();
+      const granted = hasPermission ? true : await notificationService.requestPermission();
+
+      if (!granted) {
+        Alert.alert(
+          t.settings.notificationsDeniedTitle,
+          t.settings.notificationsDeniedMessage,
+        );
+        return;
+      }
+
+      await notificationService.displayTestReminder(settings.language);
+    } catch {
+      Alert.alert(
+        t.settings.notificationsDeniedTitle,
+        t.settings.notificationsPermissionError,
+      );
+    }
   };
   const handleToggleLanguage = () => {
     const nextLanguage = settings.language === 'en' ? 'tr' : 'en';
@@ -255,6 +310,15 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
           label={t.common.vibration}
           value={settings.vibrationEnabled}
           onToggle={handleToggleVibration}
+        />
+        <SettingsRow
+          icon="notifications-outline"
+          iconTint={theme.colors.success}
+          iconBackground={'rgba(56, 217, 169, 0.14)'}
+          label={t.common.notifications}
+          hint={t.settings.notificationsCopy}
+          value={settings.notificationsEnabled}
+          onToggle={handleToggleNotifications}
         />
         <View style={[styles.divider, { backgroundColor: theme.colors.borderSoft }]} />
         <View style={styles.languageRow}>
@@ -407,6 +471,12 @@ export function SettingsScreen({ navigation }: ScreenProps<'Settings'>) {
           <CoreButton
             label="Unlock All Levels (DEV)"
             onPress={handleUnlockAllDev}
+            variant="secondary"
+            style={styles.devButton}
+          />
+          <CoreButton
+            label="Test Notification (DEV)"
+            onPress={handleTestNotification}
             variant="secondary"
             style={styles.devButton}
           />

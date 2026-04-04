@@ -17,6 +17,8 @@ type SettingsStore = {
   toggleSound: () => Promise<void>;
   toggleMusic: () => Promise<void>;
   toggleVibration: () => Promise<void>;
+  setNotificationsEnabled: (enabled: boolean) => Promise<void>;
+  setLastActiveAt: (timestamp: string) => Promise<void>;
   setLanguage: (language: AppLanguage) => Promise<void>;
   setHasSeenDiscover: (seen: boolean) => Promise<void>;
   setHasSeenGameplayDiscover: (seen: boolean) => Promise<void>;
@@ -59,6 +61,20 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   async toggleVibration() {
     const settings = await settingsService.updateSettings({
       vibrationEnabled: !get().settings.vibrationEnabled,
+    });
+    set({ settings });
+  },
+
+  async setNotificationsEnabled(enabled) {
+    const settings = await settingsService.updateSettings({
+      notificationsEnabled: enabled,
+    });
+    set({ settings });
+  },
+
+  async setLastActiveAt(timestamp) {
+    const settings = await settingsService.updateSettings({
+      lastActiveAt: timestamp,
     });
     set({ settings });
   },

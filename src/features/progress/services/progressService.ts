@@ -179,6 +179,23 @@ export const progressService = {
     return nextProgress;
   },
 
+  async syncUnlockedPacks(packIds: string[]): Promise<ProgressState> {
+    const progress = await this.getProgress();
+    const nextPackIds = Array.from(new Set([...progress.unlockedPackIds, ...packIds]));
+
+    if (nextPackIds.length === progress.unlockedPackIds.length) {
+      return progress;
+    }
+
+    const nextProgress: ProgressState = {
+      ...progress,
+      unlockedPackIds: nextPackIds,
+    };
+
+    await this.saveProgress(nextProgress);
+    return nextProgress;
+  },
+
   async syncUnlockedLevelsForPack(packId: string, levelIds: string[]): Promise<ProgressState> {
     const progress = await this.getProgress();
 

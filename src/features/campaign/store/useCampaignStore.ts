@@ -40,6 +40,12 @@ const initialLevelsByPackId: Record<string, LevelDefinition[]> = Object.fromEntr
   ]),
 );
 
+const localPackIds = new Set(localCampaignPacks.map(pack => pack.packId));
+
+function isRemoteSharedPack(packId: string) {
+  return !localPackIds.has(packId);
+}
+
 export const useCampaignStore = create<CampaignStore>((set, get) => ({
   packs: localCampaignPacks,
   levelsByPackId: initialLevelsByPackId,
@@ -56,6 +62,14 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
     set({ isRefreshing: true });
     try {
       const packs = await campaignRepository.loadCampaignPacks();
+      const remotePackIds = packs
+        .filter(pack => isRemoteSharedPack(pack.packId))
+        .map(pack => pack.packId);
+
+      if (remotePackIds.length > 0) {
+        await useProgressStore.getState().syncUnlockedPacks(remotePackIds);
+      }
+
       set({ packs, isLoaded: true, isRefreshing: false });
     } catch (error) {
       if (__DEV__) {
@@ -68,6 +82,14 @@ export const useCampaignStore = create<CampaignStore>((set, get) => ({
   async refreshCampaign() {
     try {
       const packs = await campaignRepository.loadCampaignPacks();
+      const remotePackIds = packs
+        .filter(pack => isRemoteSharedPack(pack.packId))
+        .map(pack => pack.packId);
+
+      if (remotePackIds.length > 0) {
+        await useProgressStore.getState().syncUnlockedPacks(remotePackIds);
+      }
+
       set({ packs });
 
       const loadedRemotePackIds = get().loadedPackLevelIds.filter(
