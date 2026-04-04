@@ -113,6 +113,13 @@ type TranslationTree = {
     reminderTitle: string;
     reminderBody: string;
   };
+  update: {
+    requiredTitle: string;
+    requiredMessage: string;
+    currentVersion: string;
+    latestVersion: string;
+    updateNow: string;
+  };
   discover: {
     title: string;
     skip: string;
@@ -286,6 +293,13 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       reminderTitle: 'Ready for another run?',
       reminderBody: 'You can jump back in where you left off.',
     },
+    update: {
+      requiredTitle: 'Update required',
+      requiredMessage: 'Please update the app to continue.',
+      currentVersion: 'Current version',
+      latestVersion: 'Latest version',
+      updateNow: 'Update now',
+    },
     discover: {
       title: 'Discover Center Hit',
       skip: 'Skip',
@@ -456,6 +470,13 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       channelName: 'Geri dönüş hatırlatmaları',
       reminderTitle: 'Yeni bir denemeye hazır mısın?',
       reminderBody: 'Kaldığın yerden devam edebilirsin.',
+    },
+    update: {
+      requiredTitle: 'Yeni sürüm gerekli',
+      requiredMessage: 'Devam etmek için uygulamayı güncelle.',
+      currentVersion: 'Mevcut sürüm',
+      latestVersion: 'Son sürüm',
+      updateNow: 'Şimdi güncelle',
     },
     discover: {
       title: 'Center Hit Keşfi',

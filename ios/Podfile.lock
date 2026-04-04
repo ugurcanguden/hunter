@@ -2572,6 +2572,8 @@ PODS:
     - React-perflogger (= 0.84.1)
     - React-utils (= 0.84.1)
     - SocketRocket
+  - RNDeviceInfo (15.0.2):
+    - React-Core
   - RNGestureHandler (2.30.0):
     - boost
     - DoubleConversion
@@ -2862,6 +2864,7 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios/ReactAppDependencyProvider`)
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
@@ -3035,6 +3038,8 @@ EXTERNAL SOURCES:
     :path: build/generated/ios/ReactCodegen
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNGoogleMobileAds:
@@ -3131,6 +3136,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: e96e93b493d8d86eeaee3e590ba0be53f6abe46f
   ReactCodegen: 101633fe6eb482d8ea6f6a59e575133ccb44c676
   ReactCommon: 02ee6650471e9c32a201abc0b593e4b0e5d1eede
+  RNDeviceInfo: 4c852998208b60dc192ae3529e5867817719ad1e
   RNGestureHandler: 0108b0a14d04c88c382138bea400c111ceb3f79f
   RNGoogleMobileAds: 8802b084849fffd5df2cae19df73ba82a356f281
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
