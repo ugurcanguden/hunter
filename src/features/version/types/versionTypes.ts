@@ -1,16 +1,25 @@
-export type AppVersionRule = {
+export type AppLanguageCopy = {
+  title?: string;
+  description?: string;
+  button?: string;
+};
+
+export type MobileConfigParameter = {
   key: string;
-  isPublished: boolean;
-  iosMinBuildNumber: number;
-  iosLatestVersionName?: string;
-  iosStoreUrl?: string;
-  androidMinVersionCode: number;
-  androidLatestVersionName?: string;
+  type: string;
+  valueText: string;
+  valueNumber: number;
+  valueBool: boolean;
+  valueJson: unknown;
+};
+
+export type MobileVersionConfig = {
+  androidMinVersion?: string;
   androidStoreUrl?: string;
-  updateTitleEn?: string;
-  updateMessageEn?: string;
-  updateTitleTr?: string;
-  updateMessageTr?: string;
+  androidForceUpdateMessage?: unknown;
+  iosMinVersion?: string;
+  iosStoreUrl?: string;
+  iosForceUpdateMessage?: unknown;
 };
 
 export type VersionCheckResult = {
@@ -21,4 +30,5 @@ export type VersionCheckResult = {
   storeUrl?: string;
   title: string;
   message: string;
+  buttonLabel?: string;
 };

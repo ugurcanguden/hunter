@@ -74,7 +74,7 @@ export function ForceUpdateScreen({ result }: ForceUpdateScreenProps) {
         ) : null}
 
         <CoreButton
-          label={t.update.updateNow}
+          label={result.buttonLabel || t.update.updateNow}
           onPress={() => {
             if (!result.storeUrl) {
               return;
