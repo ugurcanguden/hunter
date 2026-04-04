@@ -125,14 +125,22 @@ type TranslationTree = {
     skip: string;
     next: string;
     done: string;
+    enableNotifications: string;
+    chooseEnglish: string;
+    chooseTurkish: string;
+    notNow: string;
     stepCounter: string;
     steps: {
+      languageTitle: string;
+      languageCopy: string;
       homeTitle: string;
       homeCopy: string;
       packsTitle: string;
       packsCopy: string;
       gameTitle: string;
       gameCopy: string;
+      notificationsTitle: string;
+      notificationsCopy: string;
     };
   };
   loader: {
@@ -305,14 +313,23 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       skip: 'Skip',
       next: 'Next',
       done: 'Start',
+      enableNotifications: 'Enable',
+      chooseEnglish: 'English',
+      chooseTurkish: 'Türkçe',
+      notNow: 'Not now',
       stepCounter: 'Step',
       steps: {
+        languageTitle: 'Choose Language',
+        languageCopy: 'Select your language before the guide starts.',
         homeTitle: 'Home & Continue',
         homeCopy: 'Use Continue to jump back into your current run quickly.',
         packsTitle: 'Packs & Unlocks',
         packsCopy: 'Finish levels to unlock the next pack and open harder stages.',
         gameTitle: 'Perfect Zone',
         gameCopy: 'Aim for the bright center of the target for Perfect hits and better score.',
+        notificationsTitle: 'Return Reminders',
+        notificationsCopy:
+          'Turn on notifications to get one gentle reminder if you have not opened the game for a day.',
       },
     },
     loader: {
@@ -483,14 +500,23 @@ export const translations: Record<AppLanguage, TranslationTree> = {
       skip: 'Geç',
       next: 'İleri',
       done: 'Başla',
+      enableNotifications: 'Aç',
+      chooseEnglish: 'English',
+      chooseTurkish: 'Türkçe',
+      notNow: 'Şimdi değil',
       stepCounter: 'Adım',
       steps: {
+        languageTitle: 'Dil Seçimi',
+        languageCopy: 'Rehber başlamadan önce dilini seç.',
         homeTitle: 'Ana Sayfa ve Devam',
         homeCopy: 'Devam Et ile mevcut koşuna hızlıca geri dönebilirsin.',
         packsTitle: 'Kutular ve Kilitler',
         packsCopy: 'Bölümleri bitirerek sonraki kutuyu açar ve daha zor sahnelere geçersin.',
         gameTitle: 'Mükemmel Alan',
         gameCopy: 'Daha iyi skor için hedefin parlak merkezine nişan al ve Mükemmel vur.',
+        notificationsTitle: 'Geri Dönüş Hatırlatmaları',
+        notificationsCopy:
+          'Bir gün oyuna girmediğinde tek bir nazik hatırlatma almak için bildirimleri açabilirsin.',
       },
     },
     loader: {
