@@ -33,11 +33,12 @@ type CampaignStore = {
   getAllLoadedLevels: () => LevelDefinition[];
 };
 
-const initialLevelsByPackId = {
-  'pack-01': localLevels.filter(level => level.order >= 1 && level.order <= 10),
-  'pack-02': localLevels.filter(level => level.order >= 11 && level.order <= 20),
-  'pack-03': localLevels.filter(level => level.order >= 21 && level.order <= 30),
-};
+const initialLevelsByPackId: Record<string, LevelDefinition[]> = Object.fromEntries(
+  localCampaignPacks.map(pack => [
+    pack.packId,
+    localLevels.filter(level => level.order >= pack.startOrder && level.order <= pack.endOrder),
+  ]),
+);
 
 export const useCampaignStore = create<CampaignStore>((set, get) => ({
   packs: localCampaignPacks,

@@ -2600,7 +2600,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNGoogleMobileAds (16.2.2):
+  - RNGoogleMobileAds (16.2.3):
     - boost
     - DoubleConversion
     - fast_float
@@ -2717,8 +2717,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSoundPlayer (0.14.5):
-    - React-Core
   - RNSVG (15.15.3):
     - boost
     - DoubleConversion
@@ -2863,7 +2861,6 @@ DEPENDENCIES:
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSound (from `../node_modules/react-native-sound`)
-  - RNSoundPlayer (from `../node_modules/react-native-sound-player`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - SocketRocket (~> 0.7.1)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -3040,8 +3037,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSound:
     :path: "../node_modules/react-native-sound"
-  RNSoundPlayer:
-    :path: "../node_modules/react-native-sound-player"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -3129,10 +3124,9 @@ SPEC CHECKSUMS:
   ReactCodegen: 101633fe6eb482d8ea6f6a59e575133ccb44c676
   ReactCommon: 02ee6650471e9c32a201abc0b593e4b0e5d1eede
   RNGestureHandler: 0108b0a14d04c88c382138bea400c111ceb3f79f
-  RNGoogleMobileAds: d2333751cd1d3bf34ead1ef4fe18348a4e55e979
+  RNGoogleMobileAds: 8802b084849fffd5df2cae19df73ba82a356f281
   RNScreens: 7f643ee0fd1407dc5085c7795460bd93da113b8f
   RNSound: d5dd3ca86d9978e1c2736dfa943ba619fc9fc504
-  RNSoundPlayer: 7961678d02c7339d9e9cfb78b9f3e8fde17f9df2
   RNSVG: e8de3f46ea4e6e1360c9f5cc8bdbee2b7995132b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 447c8baf495b8d96457a46e6691a2c9952cbd07f

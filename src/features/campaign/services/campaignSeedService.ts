@@ -5,14 +5,15 @@ type PocketBaseListResponse = {
 };
 
 const seedPack = {
-  order: 2,
+  packId: 'pack-04',
+  order: 4,
   title: 'Neon Trials',
   subtitle: '3 new precision levels',
   coverTone: 'cyan',
   levelCount: 3,
-  startOrder: 11,
-  endOrder: 13,
-  unlockAfterPackId: 'pack-01',
+  startOrder: 71,
+  endOrder: 73,
+  unlockAfterPackId: 'pack-03',
   isPublished: true,
   contentVersion: 1,
   metadata: {},
@@ -20,8 +21,8 @@ const seedPack = {
 
 const seedLevels = [
   {
-    levelId: 'level-11',
-    order: 11,
+    levelId: 'level-71',
+    order: 71,
     title: 'Neon Lock',
     difficulty: 'hard',
     launcher: { speed: 2.24, moveRangePercent: 0.4 },
@@ -46,7 +47,7 @@ const seedLevels = [
     },
     obstacles: [
       {
-        id: 'obs-11-a',
+        id: 'obs-71-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.52,
@@ -59,8 +60,8 @@ const seedLevels = [
     metadata: {},
   },
   {
-    levelId: 'level-12',
-    order: 12,
+    levelId: 'level-72',
+    order: 72,
     title: 'Twin Drift',
     difficulty: 'hard',
     launcher: { speed: 2.32, moveRangePercent: 0.42 },
@@ -85,7 +86,7 @@ const seedLevels = [
     },
     obstacles: [
       {
-        id: 'obs-12-a',
+        id: 'obs-72-a',
         type: 'blocker',
         xPercent: 0.34,
         yPercent: 0.5,
@@ -93,7 +94,7 @@ const seedLevels = [
         heightPercent: 0.038,
       },
       {
-        id: 'obs-12-b',
+        id: 'obs-72-b',
         type: 'blocker',
         xPercent: 0.66,
         yPercent: 0.5,
@@ -106,8 +107,8 @@ const seedLevels = [
     metadata: {},
   },
   {
-    levelId: 'level-13',
-    order: 13,
+    levelId: 'level-73',
+    order: 73,
     title: 'Gate Pulse',
     difficulty: 'hard',
     launcher: { speed: 2.4, moveRangePercent: 0.44 },
@@ -132,7 +133,7 @@ const seedLevels = [
     },
     obstacles: [
       {
-        id: 'obs-13-a',
+        id: 'obs-73-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.54,
@@ -140,7 +141,7 @@ const seedLevels = [
         heightPercent: 0.036,
       },
       {
-        id: 'obs-13-b',
+        id: 'obs-73-b',
         type: 'blocker',
         xPercent: 0.28,
         yPercent: 0.44,
@@ -148,7 +149,7 @@ const seedLevels = [
         heightPercent: 0.034,
       },
       {
-        id: 'obs-13-c',
+        id: 'obs-73-c',
         type: 'blocker',
         xPercent: 0.72,
         yPercent: 0.44,
@@ -242,20 +243,20 @@ export const campaignSeedService = {
 
     const remotePackPayload = normalizePocketBaseJsonPayload({
       ...seedPack,
-      unlockAfterPackId: starterPackId,
+      unlockAfterPackId: seedPack.unlockAfterPackId ?? starterPackId,
     });
 
     await upsertRecord(
       POCKETBASE_COLLECTIONS.packs,
-      'order',
-      seedPack.order,
+      'packId',
+      seedPack.packId,
       remotePackPayload,
     );
 
     const remotePackId = await fetchExistingRecordId(
       POCKETBASE_COLLECTIONS.packs,
-      'order',
-      seedPack.order,
+      'packId',
+      seedPack.packId,
     );
 
     if (!remotePackId) {

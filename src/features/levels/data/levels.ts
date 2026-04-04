@@ -1,93 +1,416 @@
-import { LevelDefinition } from '@centerhit-features/levels/types/levelTypes';
+import {
+  LevelDefinition,
+  LevelDifficulty,
+  MovementAxis,
+  MovementBehavior,
+  ObstacleDefinition,
+} from '@centerhit-features/levels/types/levelTypes';
 
-export const levels: readonly LevelDefinition[] = [
+type LevelTuning = {
+  launcherSpeed: number;
+  launcherRange: number;
+  targetSize: number;
+  targetSpeed: number;
+  targetRange: number;
+  ballSpeed: number;
+  requiredHits: number;
+  requiredPerfectHits: number;
+  maxMissAllowed: number;
+  maxShots: number;
+  oneStarScore: number;
+  twoStarScore: number;
+  threeStarScore: number;
+};
+
+type ObstacleTemplate = Omit<ObstacleDefinition, 'id'>;
+
+type EasyTheme = {
+  title: string;
+  axis: MovementAxis;
+  behavior: MovementBehavior;
+  start: LevelTuning;
+  end: LevelTuning;
+  finalObstacles?: ObstacleTemplate[];
+  obstacleRevealStep?: number;
+};
+
+function round(value: number, digits = 2) {
+  const multiplier = 10 ** digits;
+  return Math.round(value * multiplier) / multiplier;
+}
+
+function lerp(start: number, end: number, factor: number) {
+  return start + (end - start) * factor;
+}
+
+function lerpInt(start: number, end: number, factor: number) {
+  return Math.round(lerp(start, end, factor));
+}
+
+function padLevel(order: number) {
+  return String(order).padStart(2, '0');
+}
+
+function createLevelFromTuning(
+  order: number,
+  title: string,
+  difficulty: LevelDifficulty,
+  axis: MovementAxis,
+  behavior: MovementBehavior,
+  tuning: LevelTuning,
+  obstacles?: ObstacleDefinition[],
+): LevelDefinition {
+  const requiredHits = lerpInt(tuning.requiredHits, tuning.requiredHits, 1);
+  const maxShots = Math.max(lerpInt(tuning.maxShots, tuning.maxShots, 1), requiredHits);
+
+  return {
+    id: `level-${padLevel(order)}`,
+    order,
+    title,
+    difficulty,
+    launcher: {
+      speed: round(tuning.launcherSpeed),
+      moveRangePercent: round(tuning.launcherRange),
+    },
+    target: {
+      size: round(tuning.targetSize),
+      speed: round(tuning.targetSpeed),
+      movementAxis: axis,
+      movementBehavior: behavior,
+      moveRangePercent: axis === 'static' ? 0 : round(tuning.targetRange),
+    },
+    ball: { speed: round(tuning.ballSpeed) },
+    objective: {
+      requiredHits,
+      requiredPerfectHits: lerpInt(tuning.requiredPerfectHits, tuning.requiredPerfectHits, 1),
+      maxMissAllowed: lerpInt(tuning.maxMissAllowed, tuning.maxMissAllowed, 1),
+      maxShots,
+    },
+    stars: {
+      oneStarScore: lerpInt(tuning.oneStarScore, tuning.oneStarScore, 1),
+      twoStarScore: lerpInt(tuning.twoStarScore, tuning.twoStarScore, 1),
+      threeStarScore: lerpInt(tuning.threeStarScore, tuning.threeStarScore, 1),
+    },
+    obstacles,
+  };
+}
+
+function interpolateTuning(start: LevelTuning, end: LevelTuning, factor: number): LevelTuning {
+  return {
+    launcherSpeed: lerp(start.launcherSpeed, end.launcherSpeed, factor),
+    launcherRange: lerp(start.launcherRange, end.launcherRange, factor),
+    targetSize: lerp(start.targetSize, end.targetSize, factor),
+    targetSpeed: lerp(start.targetSpeed, end.targetSpeed, factor),
+    targetRange: lerp(start.targetRange, end.targetRange, factor),
+    ballSpeed: lerp(start.ballSpeed, end.ballSpeed, factor),
+    requiredHits: lerpInt(start.requiredHits, end.requiredHits, factor),
+    requiredPerfectHits: lerpInt(start.requiredPerfectHits, end.requiredPerfectHits, factor),
+    maxMissAllowed: lerpInt(start.maxMissAllowed, end.maxMissAllowed, factor),
+    maxShots: lerpInt(start.maxShots, end.maxShots, factor),
+    oneStarScore: lerpInt(start.oneStarScore, end.oneStarScore, factor),
+    twoStarScore: lerpInt(start.twoStarScore, end.twoStarScore, factor),
+    threeStarScore: lerpInt(start.threeStarScore, end.threeStarScore, factor),
+  };
+}
+
+function mergeProgressiveStart(previous: LevelTuning, next: LevelTuning): LevelTuning {
+  return {
+    launcherSpeed: Math.max(previous.launcherSpeed, next.launcherSpeed),
+    launcherRange: Math.max(previous.launcherRange, next.launcherRange),
+    targetSize: Math.min(previous.targetSize, next.targetSize),
+    targetSpeed: Math.max(previous.targetSpeed, next.targetSpeed),
+    targetRange: Math.max(previous.targetRange, next.targetRange),
+    ballSpeed: Math.max(previous.ballSpeed, next.ballSpeed),
+    requiredHits: Math.max(previous.requiredHits, next.requiredHits),
+    requiredPerfectHits: Math.max(previous.requiredPerfectHits, next.requiredPerfectHits),
+    maxMissAllowed: Math.min(previous.maxMissAllowed, next.maxMissAllowed),
+    maxShots: Math.max(previous.maxShots, next.maxShots),
+    oneStarScore: Math.max(previous.oneStarScore, next.oneStarScore),
+    twoStarScore: Math.max(previous.twoStarScore, next.twoStarScore),
+    threeStarScore: Math.max(previous.threeStarScore, next.threeStarScore),
+  };
+}
+
+function mergeProgressiveEnd(start: LevelTuning, end: LevelTuning): LevelTuning {
+  return {
+    launcherSpeed: Math.max(start.launcherSpeed, end.launcherSpeed),
+    launcherRange: Math.max(start.launcherRange, end.launcherRange),
+    targetSize: Math.min(start.targetSize, end.targetSize),
+    targetSpeed: Math.max(start.targetSpeed, end.targetSpeed),
+    targetRange: Math.max(start.targetRange, end.targetRange),
+    ballSpeed: Math.max(start.ballSpeed, end.ballSpeed),
+    requiredHits: Math.max(start.requiredHits, end.requiredHits),
+    requiredPerfectHits: Math.max(start.requiredPerfectHits, end.requiredPerfectHits),
+    maxMissAllowed: Math.min(start.maxMissAllowed, end.maxMissAllowed),
+    maxShots: Math.max(start.maxShots, end.maxShots),
+    oneStarScore: Math.max(start.oneStarScore, end.oneStarScore),
+    twoStarScore: Math.max(start.twoStarScore, end.twoStarScore),
+    threeStarScore: Math.max(start.threeStarScore, end.threeStarScore),
+  };
+}
+
+function buildObstacleProgress(
+  order: number,
+  finalObstacles: ObstacleTemplate[] | undefined,
+  variantIndex: number,
+  revealStep: number,
+): ObstacleDefinition[] | undefined {
+  if (!finalObstacles || finalObstacles.length === 0 || variantIndex < revealStep) {
+    return undefined;
+  }
+
+  const visibleCount =
+    variantIndex === revealStep ? Math.min(1, finalObstacles.length) : finalObstacles.length;
+  const scale = 0.72 + variantIndex * 0.07;
+
+  return finalObstacles.slice(0, visibleCount).map((obstacle, index) => ({
+    ...obstacle,
+    id: `obs-${padLevel(order)}-${String.fromCharCode(97 + index)}`,
+    widthPercent:
+      typeof obstacle.widthPercent === 'number'
+        ? round(obstacle.widthPercent * scale, 3)
+        : obstacle.widthPercent,
+    heightPercent:
+      typeof obstacle.heightPercent === 'number'
+        ? round(obstacle.heightPercent * scale, 3)
+        : obstacle.heightPercent,
+  }));
+}
+
+function buildEasyLevels(themes: readonly EasyTheme[]) {
+  const suffixes = ['Primer', 'Warmup', 'Flow', 'Focus', 'Final'];
+  const builtLevels: LevelDefinition[] = [];
+  let previousEnd: LevelTuning | null = null;
+
+  themes.forEach((theme, themeIndex) => {
+    const progressiveStart = previousEnd
+      ? mergeProgressiveStart(previousEnd, theme.start)
+      : theme.start;
+    const progressiveEnd = mergeProgressiveEnd(progressiveStart, theme.end);
+
+    suffixes.forEach((suffix, variantIndex) => {
+      const factor = variantIndex / (suffixes.length - 1);
+      const order = themeIndex * suffixes.length + variantIndex + 1;
+      const tuning = interpolateTuning(progressiveStart, progressiveEnd, factor);
+      const obstacles = buildObstacleProgress(
+        order,
+        theme.finalObstacles,
+        variantIndex,
+        theme.obstacleRevealStep ?? 2,
+      );
+
+      builtLevels.push(
+        createLevelFromTuning(
+          order,
+          `${theme.title} ${suffix}`,
+          'easy',
+          theme.axis,
+          theme.behavior,
+          tuning,
+          obstacles,
+        ),
+      );
+    });
+
+    previousEnd = progressiveEnd;
+  });
+
+  return builtLevels;
+}
+
+function shiftLevels(levelsToShift: readonly LevelDefinition[], offset: number) {
+  return levelsToShift.map(level => {
+    const shiftedOrder = level.order + offset;
+
+    return {
+      ...level,
+      id: `level-${padLevel(shiftedOrder)}`,
+      order: shiftedOrder,
+      obstacles: level.obstacles?.map((obstacle, index) => ({
+        ...obstacle,
+        id: `obs-${padLevel(shiftedOrder)}-${String.fromCharCode(97 + index)}`,
+      })),
+    };
+  });
+}
+
+const easyThemes: readonly EasyTheme[] = [
   {
-    id: 'level-01',
-    order: 1,
     title: 'Soft Launch',
-    difficulty: 'easy',
-    launcher: { speed: 1.2, moveRangePercent: 0.16 },
-    target: {
-      size: 1,
-      speed: 0.6,
-      movementAxis: 'static',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0,
+    axis: 'static',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.08,
+      launcherRange: 0.12,
+      targetSize: 1.08,
+      targetSpeed: 0.42,
+      targetRange: 0,
+      ballSpeed: 0.96,
+      requiredHits: 3,
+      requiredPerfectHits: 0,
+      maxMissAllowed: 5,
+      maxShots: 7,
+      oneStarScore: 140,
+      twoStarScore: 240,
+      threeStarScore: 320,
     },
-    ball: { speed: 1 },
-    objective: { requiredHits: 4, requiredPerfectHits: 0, maxMissAllowed: 4, maxShots: 6 },
-    stars: { oneStarScore: 200, twoStarScore: 320, threeStarScore: 440 },
+    end: {
+      launcherSpeed: 1.2,
+      launcherRange: 0.16,
+      targetSize: 1,
+      targetSpeed: 0.6,
+      targetRange: 0,
+      ballSpeed: 1,
+      requiredHits: 4,
+      requiredPerfectHits: 0,
+      maxMissAllowed: 4,
+      maxShots: 6,
+      oneStarScore: 200,
+      twoStarScore: 320,
+      threeStarScore: 440,
+    },
   },
   {
-    id: 'level-02',
-    order: 2,
     title: 'Pulse Center',
-    difficulty: 'easy',
-    launcher: { speed: 1.34, moveRangePercent: 0.2 },
-    target: {
-      size: 0.9,
-      speed: 0.8,
-      movementAxis: 'static',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0,
+    axis: 'static',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.22,
+      launcherRange: 0.16,
+      targetSize: 0.98,
+      targetSpeed: 0.62,
+      targetRange: 0,
+      ballSpeed: 1,
+      requiredHits: 4,
+      requiredPerfectHits: 0,
+      maxMissAllowed: 4,
+      maxShots: 7,
+      oneStarScore: 220,
+      twoStarScore: 340,
+      threeStarScore: 460,
     },
-    ball: { speed: 1.05 },
-    objective: { requiredHits: 5, requiredPerfectHits: 1, maxMissAllowed: 3, maxShots: 7 },
-    stars: { oneStarScore: 280, twoStarScore: 420, threeStarScore: 560 },
+    end: {
+      launcherSpeed: 1.34,
+      launcherRange: 0.2,
+      targetSize: 0.9,
+      targetSpeed: 0.8,
+      targetRange: 0,
+      ballSpeed: 1.05,
+      requiredHits: 5,
+      requiredPerfectHits: 1,
+      maxMissAllowed: 3,
+      maxShots: 7,
+      oneStarScore: 280,
+      twoStarScore: 420,
+      threeStarScore: 560,
+    },
   },
   {
-    id: 'level-03',
-    order: 3,
     title: 'Opening Drift',
-    difficulty: 'easy',
-    launcher: { speed: 1.48, moveRangePercent: 0.24 },
-    target: {
-      size: 0.84,
-      speed: 0.94,
-      movementAxis: 'horizontal',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0.2,
+    axis: 'horizontal',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.36,
+      launcherRange: 0.2,
+      targetSize: 0.9,
+      targetSpeed: 0.82,
+      targetRange: 0.08,
+      ballSpeed: 1.04,
+      requiredHits: 5,
+      requiredPerfectHits: 1,
+      maxMissAllowed: 4,
+      maxShots: 8,
+      oneStarScore: 300,
+      twoStarScore: 440,
+      threeStarScore: 580,
     },
-    ball: { speed: 1.1 },
-    objective: { requiredHits: 6, requiredPerfectHits: 1, maxMissAllowed: 3, maxShots: 8 },
-    stars: { oneStarScore: 360, twoStarScore: 500, threeStarScore: 660 },
+    end: {
+      launcherSpeed: 1.48,
+      launcherRange: 0.24,
+      targetSize: 0.84,
+      targetSpeed: 0.94,
+      targetRange: 0.2,
+      ballSpeed: 1.1,
+      requiredHits: 6,
+      requiredPerfectHits: 1,
+      maxMissAllowed: 3,
+      maxShots: 8,
+      oneStarScore: 360,
+      twoStarScore: 500,
+      threeStarScore: 660,
+    },
   },
   {
-    id: 'level-04',
-    order: 4,
     title: 'Sync Line',
-    difficulty: 'easy',
-    launcher: { speed: 1.56, moveRangePercent: 0.26 },
-    target: {
-      size: 0.78,
-      speed: 1.08,
-      movementAxis: 'horizontal',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0.26,
+    axis: 'horizontal',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.5,
+      launcherRange: 0.24,
+      targetSize: 0.82,
+      targetSpeed: 0.96,
+      targetRange: 0.2,
+      ballSpeed: 1.08,
+      requiredHits: 6,
+      requiredPerfectHits: 1,
+      maxMissAllowed: 3,
+      maxShots: 9,
+      oneStarScore: 360,
+      twoStarScore: 520,
+      threeStarScore: 660,
     },
-    ball: { speed: 1.12 },
-    objective: { requiredHits: 6, requiredPerfectHits: 2, maxMissAllowed: 3, maxShots: 8 },
-    stars: { oneStarScore: 390, twoStarScore: 560, threeStarScore: 700 },
+    end: {
+      launcherSpeed: 1.56,
+      launcherRange: 0.26,
+      targetSize: 0.78,
+      targetSpeed: 1.08,
+      targetRange: 0.26,
+      ballSpeed: 1.12,
+      requiredHits: 6,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 8,
+      oneStarScore: 390,
+      twoStarScore: 560,
+      threeStarScore: 700,
+    },
   },
   {
-    id: 'level-05',
-    order: 5,
     title: 'Sweep Window',
-    difficulty: 'easy',
-    launcher: { speed: 1.68, moveRangePercent: 0.28 },
-    target: {
-      size: 0.72,
-      speed: 1.2,
-      movementAxis: 'horizontal',
-      movementBehavior: 'loop',
-      moveRangePercent: 0.3,
+    axis: 'horizontal',
+    behavior: 'loop',
+    start: {
+      launcherSpeed: 1.56,
+      launcherRange: 0.26,
+      targetSize: 0.8,
+      targetSpeed: 1.04,
+      targetRange: 0.24,
+      ballSpeed: 1.1,
+      requiredHits: 6,
+      requiredPerfectHits: 1,
+      maxMissAllowed: 3,
+      maxShots: 9,
+      oneStarScore: 400,
+      twoStarScore: 560,
+      threeStarScore: 700,
     },
-    ball: { speed: 1.14 },
-    objective: { requiredHits: 7, requiredPerfectHits: 2, maxMissAllowed: 2, maxShots: 10 },
-    stars: { oneStarScore: 470, twoStarScore: 650, threeStarScore: 800 },
-    obstacles: [
+    end: {
+      launcherSpeed: 1.68,
+      launcherRange: 0.28,
+      targetSize: 0.72,
+      targetSpeed: 1.2,
+      targetRange: 0.3,
+      ballSpeed: 1.14,
+      requiredHits: 7,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 2,
+      maxShots: 10,
+      oneStarScore: 470,
+      twoStarScore: 650,
+      threeStarScore: 800,
+    },
+    finalObstacles: [
       {
-        id: 'obs-05-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.57,
@@ -97,24 +420,41 @@ export const levels: readonly LevelDefinition[] = [
     ],
   },
   {
-    id: 'level-06',
-    order: 6,
     title: 'Skill Gate',
-    difficulty: 'easy',
-    launcher: { speed: 1.78, moveRangePercent: 0.3 },
-    target: {
-      size: 0.67,
-      speed: 1.32,
-      movementAxis: 'horizontal',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0.34,
+    axis: 'horizontal',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.66,
+      launcherRange: 0.28,
+      targetSize: 0.74,
+      targetSpeed: 1.14,
+      targetRange: 0.28,
+      ballSpeed: 1.14,
+      requiredHits: 7,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 10,
+      oneStarScore: 460,
+      twoStarScore: 640,
+      threeStarScore: 780,
     },
-    ball: { speed: 1.18 },
-    objective: { requiredHits: 8, requiredPerfectHits: 3, maxMissAllowed: 2, maxShots: 10 },
-    stars: { oneStarScore: 540, twoStarScore: 740, threeStarScore: 900 },
-    obstacles: [
+    end: {
+      launcherSpeed: 1.78,
+      launcherRange: 0.3,
+      targetSize: 0.67,
+      targetSpeed: 1.32,
+      targetRange: 0.34,
+      ballSpeed: 1.18,
+      requiredHits: 8,
+      requiredPerfectHits: 3,
+      maxMissAllowed: 2,
+      maxShots: 10,
+      oneStarScore: 540,
+      twoStarScore: 740,
+      threeStarScore: 900,
+    },
+    finalObstacles: [
       {
-        id: 'obs-06-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.54,
@@ -124,137 +464,207 @@ export const levels: readonly LevelDefinition[] = [
     ],
   },
   {
-    id: 'level-07',
-    order: 7,
     title: 'Rhythm Break',
-    difficulty: 'easy',
-    launcher: { speed: 1.86, moveRangePercent: 0.31 },
-    target: {
-      size: 0.62,
-      speed: 1.42,
-      movementAxis: 'horizontal',
-      movementBehavior: 'loop',
-      moveRangePercent: 0.34,
+    axis: 'horizontal',
+    behavior: 'loop',
+    start: {
+      launcherSpeed: 1.74,
+      launcherRange: 0.28,
+      targetSize: 0.72,
+      targetSpeed: 1.2,
+      targetRange: 0.28,
+      ballSpeed: 1.16,
+      requiredHits: 7,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 10,
+      oneStarScore: 500,
+      twoStarScore: 700,
+      threeStarScore: 860,
     },
-    ball: { speed: 1.22 },
-    objective: { requiredHits: 8, requiredPerfectHits: 3, maxMissAllowed: 2, maxShots: 11 },
-    stars: { oneStarScore: 590, twoStarScore: 780, threeStarScore: 930 },
-    obstacles: [
+    end: {
+      launcherSpeed: 1.82,
+      launcherRange: 0.3,
+      targetSize: 0.64,
+      targetSpeed: 1.34,
+      targetRange: 0.32,
+      ballSpeed: 1.2,
+      requiredHits: 8,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 11,
+      oneStarScore: 590,
+      twoStarScore: 780,
+      threeStarScore: 930,
+    },
+    finalObstacles: [
       {
-        id: 'obs-07-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.56,
-        widthPercent: 0.09,
-        heightPercent: 0.036,
+        widthPercent: 0.08,
+        heightPercent: 0.032,
       },
     ],
   },
   {
-    id: 'level-08',
-    order: 8,
     title: 'Tight Relay',
-    difficulty: 'easy',
-    launcher: { speed: 1.98, moveRangePercent: 0.34 },
-    target: {
-      size: 0.58,
-      speed: 1.56,
-      movementAxis: 'horizontal',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0.36,
+    axis: 'horizontal',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.8,
+      launcherRange: 0.3,
+      targetSize: 0.68,
+      targetSpeed: 1.28,
+      targetRange: 0.3,
+      ballSpeed: 1.18,
+      requiredHits: 8,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 11,
+      oneStarScore: 560,
+      twoStarScore: 760,
+      threeStarScore: 920,
     },
-    ball: { speed: 1.26 },
-    objective: { requiredHits: 9, requiredPerfectHits: 4, maxMissAllowed: 2, maxShots: 12 },
-    stars: { oneStarScore: 660, twoStarScore: 840, threeStarScore: 1020 },
-    obstacles: [
+    end: {
+      launcherSpeed: 1.9,
+      launcherRange: 0.32,
+      targetSize: 0.6,
+      targetSpeed: 1.46,
+      targetRange: 0.34,
+      ballSpeed: 1.24,
+      requiredHits: 9,
+      requiredPerfectHits: 3,
+      maxMissAllowed: 3,
+      maxShots: 12,
+      oneStarScore: 660,
+      twoStarScore: 840,
+      threeStarScore: 1020,
+    },
+    finalObstacles: [
       {
-        id: 'obs-08-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.55,
-        widthPercent: 0.11,
-        heightPercent: 0.04,
+        widthPercent: 0.1,
+        heightPercent: 0.036,
       },
     ],
   },
   {
-    id: 'level-09',
-    order: 9,
     title: 'Split View',
-    difficulty: 'easy',
-    launcher: { speed: 2.06, moveRangePercent: 0.36 },
-    target: {
-      size: 0.54,
-      speed: 1.64,
-      movementAxis: 'horizontal',
-      movementBehavior: 'loop',
-      moveRangePercent: 0.38,
+    axis: 'horizontal',
+    behavior: 'loop',
+    start: {
+      launcherSpeed: 1.86,
+      launcherRange: 0.31,
+      targetSize: 0.64,
+      targetSpeed: 1.34,
+      targetRange: 0.32,
+      ballSpeed: 1.22,
+      requiredHits: 8,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 12,
+      oneStarScore: 620,
+      twoStarScore: 820,
+      threeStarScore: 980,
     },
-    ball: { speed: 1.3 },
-    objective: { requiredHits: 10, requiredPerfectHits: 4, maxMissAllowed: 2, maxShots: 12 },
-    stars: { oneStarScore: 720, twoStarScore: 920, threeStarScore: 1100 },
-    obstacles: [
+    end: {
+      launcherSpeed: 1.96,
+      launcherRange: 0.34,
+      targetSize: 0.57,
+      targetSpeed: 1.5,
+      targetRange: 0.34,
+      ballSpeed: 1.26,
+      requiredHits: 9,
+      requiredPerfectHits: 3,
+      maxMissAllowed: 3,
+      maxShots: 13,
+      oneStarScore: 720,
+      twoStarScore: 920,
+      threeStarScore: 1100,
+    },
+    finalObstacles: [
       {
-        id: 'obs-09-a',
         type: 'blocker',
         xPercent: 0.34,
         yPercent: 0.5,
-        widthPercent: 0.14,
-        heightPercent: 0.04,
+        widthPercent: 0.1,
+        heightPercent: 0.034,
       },
       {
-        id: 'obs-09-b',
         type: 'blocker',
         xPercent: 0.66,
         yPercent: 0.5,
-        widthPercent: 0.14,
-        heightPercent: 0.04,
+        widthPercent: 0.1,
+        heightPercent: 0.034,
       },
     ],
+    obstacleRevealStep: 1,
   },
   {
-    id: 'level-10',
-    order: 10,
     title: 'Crown Gate',
-    difficulty: 'easy',
-    launcher: { speed: 2.16, moveRangePercent: 0.38 },
-    target: {
-      size: 0.48,
-      speed: 1.78,
-      movementAxis: 'horizontal',
-      movementBehavior: 'bounce',
-      moveRangePercent: 0.4,
+    axis: 'horizontal',
+    behavior: 'bounce',
+    start: {
+      launcherSpeed: 1.92,
+      launcherRange: 0.33,
+      targetSize: 0.62,
+      targetSpeed: 1.42,
+      targetRange: 0.34,
+      ballSpeed: 1.24,
+      requiredHits: 9,
+      requiredPerfectHits: 2,
+      maxMissAllowed: 3,
+      maxShots: 13,
+      oneStarScore: 680,
+      twoStarScore: 900,
+      threeStarScore: 1080,
     },
-    ball: { speed: 1.32 },
-    objective: { requiredHits: 11, requiredPerfectHits: 5, maxMissAllowed: 1, maxShots: 13 },
-    stars: { oneStarScore: 800, twoStarScore: 1040, threeStarScore: 1240 },
-    obstacles: [
+    end: {
+      launcherSpeed: 2.02,
+      launcherRange: 0.35,
+      targetSize: 0.52,
+      targetSpeed: 1.6,
+      targetRange: 0.36,
+      ballSpeed: 1.28,
+      requiredHits: 10,
+      requiredPerfectHits: 3,
+      maxMissAllowed: 2,
+      maxShots: 14,
+      oneStarScore: 800,
+      twoStarScore: 1040,
+      threeStarScore: 1240,
+    },
+    finalObstacles: [
       {
-        id: 'obs-10-a',
         type: 'blocker',
         xPercent: 0.5,
         yPercent: 0.52,
-        widthPercent: 0.1,
-        heightPercent: 0.04,
+        widthPercent: 0.08,
+        heightPercent: 0.034,
       },
       {
-        id: 'obs-10-b',
         type: 'blocker',
-        xPercent: 0.28,
+        xPercent: 0.24,
         yPercent: 0.45,
-        widthPercent: 0.09,
-        heightPercent: 0.036,
+        widthPercent: 0.08,
+        heightPercent: 0.032,
       },
       {
-        id: 'obs-10-c',
         type: 'blocker',
-        xPercent: 0.72,
+        xPercent: 0.76,
         yPercent: 0.45,
-        widthPercent: 0.09,
-        heightPercent: 0.036,
+        widthPercent: 0.08,
+        heightPercent: 0.032,
       },
     ],
+    obstacleRevealStep: 1,
   },
+];
+
+const advancedLevelsBase: readonly LevelDefinition[] = [
   {
     id: 'level-11',
     order: 11,
@@ -984,3 +1394,9 @@ export const levels: readonly LevelDefinition[] = [
     ],
   },
 ] as const;
+
+const easyLevels = buildEasyLevels(easyThemes);
+const mediumLevels = shiftLevels(advancedLevelsBase.slice(0, 10), 40);
+const hardLevels = shiftLevels(advancedLevelsBase.slice(10), 40);
+
+export const levels: readonly LevelDefinition[] = [...easyLevels, ...mediumLevels, ...hardLevels];
