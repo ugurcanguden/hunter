@@ -3065,7 +3065,7 @@ SPEC CHECKSUMS:
   glog: e56ede4028c4b7418e6b1195a36b1656bb35e225
   Google-Mobile-Ads-SDK: 8429bef6ee1a4e322b0a5571b64217ed8317a3d5
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
-  hermes-engine: 908ab1dfe12b2350cce908313f9f9ae5825a006f
+  hermes-engine: a321e734121c739a93ee5087b2ae83027c3ca898
   RCT-Folly: 9e4e1ae78413fb0387567f5dc5d5d5672f23f457
   RCTDeprecation: 7489702d717ceea80e271eeacb3fbca39fa3c056
   RCTRequired: 1cceac389e77dc5826c681cb782d864b0ed623fc

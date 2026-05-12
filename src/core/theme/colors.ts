@@ -19,4 +19,9 @@ export const colors = {
   stageGlow: 'rgba(60, 230, 255, 0.12)',
   stageRing: 'rgba(140, 255, 244, 0.22)',
   shadow: '#041019',
+  particlePerfect: '#E9FFFF',
+  particleGood: '#47CFFF',
+  obstacleBorder: 'rgba(255, 201, 120, 0.35)',
+  obstacleGlow: 'rgba(255, 182, 72, 0.15)',
+  stageAmbient: 'rgba(60, 230, 255, 0.04)',
 } as const;

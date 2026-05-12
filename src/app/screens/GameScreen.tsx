@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Easing, LayoutChangeEvent, Pressable, StyleSheet, View } from 'react-native';
 
 import { ScreenProps } from '@centerhit-app/navigation/navigationTypes';
 import { ROUTES } from '@centerhit-app/navigation/routeNames';
@@ -9,9 +9,14 @@ import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreModal } from '@centerhit-components/common/CoreModal';
 import { CoreScreen } from '@centerhit-components/common/CoreScreen';
 import { CoreText } from '@centerhit-components/common/CoreText';
+import { GameLauncher } from '@centerhit-components/game/GameLauncher';
 import { GameOverModal } from '@centerhit-components/game/GameOverModal';
 import { GameOverlayMessage } from '@centerhit-components/game/GameOverlayMessage';
+import { GameTarget } from '@centerhit-components/game/GameTarget';
 import { GameTopBar } from '@centerhit-components/game/GameTopBar';
+import { ParticleExplosion } from '@centerhit-components/game/ParticleExplosion';
+import { StageBackground } from '@centerhit-components/game/StageBackground';
+import { useParticleSystem } from '@centerhit-game/hooks/useParticleSystem';
 import { LevelCompleteModal } from '@centerhit-components/game/LevelCompleteModal';
 import { PauseModal } from '@centerhit-components/game/PauseModal';
 import { useI18n } from '@centerhit-core/i18n/useI18n';
@@ -62,6 +67,10 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
   const safeLevel = level ?? fallbackLevel ?? levelService.getAllLevels()[0]!;
   const { session, pause, resume, retry, shoot } = useGameSession(safeLevel);
   useGameFeedbackEffects(session);
+  const { pool: particlePool, trigger: triggerParticles } = useParticleSystem();
+  const prevFeedbackUntilRef = useRef(session.feedback.until);
+  const lastProjectilePosRef = useRef({ x: 0, y: 0 });
+  const progressAnim = useRef(new Animated.Value(0)).current;
   const objectiveSummary = useMemo(
     () => buildObjectiveSummary(session),
     [session],
@@ -158,6 +167,37 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
     session.score,
     session.status,
   ]);
+
+  useEffect(() => {
+    if (session.projectile.isActive) {
+      lastProjectilePosRef.current = {
+        x: session.projectile.x * stageSize.width,
+        y: session.projectile.y * stageSize.height,
+      };
+    }
+  }, [session.projectile.isActive, session.projectile.x, session.projectile.y, stageSize]);
+
+  useEffect(() => {
+    if (
+      session.feedback.until !== null &&
+      session.feedback.until !== prevFeedbackUntilRef.current &&
+      session.feedback.type !== null
+    ) {
+      const hitX = lastProjectilePosRef.current.x || stageSize.width / 2;
+      const hitY = lastProjectilePosRef.current.y || stageSize.height * 0.18;
+      triggerParticles(hitX, hitY, session.feedback.type);
+    }
+    prevFeedbackUntilRef.current = session.feedback.until;
+  }, [session.feedback.until, session.feedback.type, stageSize, triggerParticles]);
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: scoreProgress.progressRatio,
+      duration: 320,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [progressAnim, scoreProgress.progressRatio]);
 
   const nextLevel = levelService.getNextLevel(safeLevel.id);
   const handleExitToHome = () => {
@@ -324,7 +364,7 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                       { backgroundColor: theme.colors.surfaceSoft },
                     ]}
                   />
-                  <View
+                  <Animated.View
                     style={[
                       styles.starProgressFill,
                       {
@@ -332,7 +372,10 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                           scoreProgress.targetStars === null
                             ? theme.colors.success
                             : theme.colors.accentPrimary,
-                        width: `${scoreProgress.progressRatio * 100}%`,
+                        width: progressAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0%', '100%'],
+                        }),
                       },
                     ]}
                   />
@@ -453,6 +496,8 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
           ]}>
           <View style={styles.targetZone} />
 
+          <StageBackground />
+
           {stageEffectStyle ? <View pointerEvents="none" style={[styles.stageEffect, stageEffectStyle]} /> : null}
 
           {stageSize.width > 0 ? (
@@ -468,10 +513,9 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                     style={[
                       styles.obstaclePiece,
                       {
-                        backgroundColor: theme.colors.surface,
                         borderColor: obstacleFlashActive
-                          ? theme.colors.warning
-                          : theme.colors.accentSecondary,
+                          ? theme.colors.accentPrimary
+                          : theme.colors.obstacleBorder,
                         height: stageSize.height * obstacle.height,
                         left:
                           obstacle.x * stageSize.width -
@@ -479,57 +523,78 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                         top:
                           obstacle.y * stageSize.height -
                           (stageSize.height * obstacle.height) / 2,
-                        transform: [{ scale: obstacleFlashActive ? 1.04 : 1 }],
+                        transform: [{ scale: obstacleFlashActive ? 1.06 : 1 }],
                         width: stageSize.width * obstacle.width,
                       },
                       obstacleFlashActive ? theme.shadows.glow : theme.shadows.card,
                     ]}>
+                    {/* Dark inner panel */}
                     <View
                       style={[
-                        styles.obstacleEdge,
+                        StyleSheet.absoluteFillObject,
                         {
                           backgroundColor: obstacleFlashActive
-                            ? theme.colors.perfectHit
+                            ? theme.colors.surfaceSoft
+                            : theme.colors.surface,
+                          borderRadius: 8,
+                        },
+                      ]}
+                    />
+                    {/* Glow tint */}
+                    <View
+                      style={[
+                        StyleSheet.absoluteFillObject,
+                        {
+                          backgroundColor: obstacleFlashActive
+                            ? 'rgba(60,230,255,0.12)'
+                            : theme.colors.obstacleGlow,
+                          borderRadius: 8,
+                        },
+                      ]}
+                    />
+                    {/* Diagonal cross lines */}
+                    <View style={styles.obstacleCrossContainer}>
+                      <View
+                        style={[
+                          styles.obstacleDiag1,
+                          {
+                            backgroundColor: obstacleFlashActive
+                              ? theme.colors.accentPrimary
+                              : theme.colors.accentSecondary,
+                            opacity: obstacleFlashActive ? 0.55 : 0.35,
+                          },
+                        ]}
+                      />
+                      <View
+                        style={[
+                          styles.obstacleDiag2,
+                          {
+                            backgroundColor: obstacleFlashActive
+                              ? theme.colors.accentPrimary
+                              : theme.colors.accentSecondary,
+                            opacity: obstacleFlashActive ? 0.55 : 0.35,
+                          },
+                        ]}
+                      />
+                    </View>
+                    {/* Top accent line */}
+                    <View
+                      style={[
+                        styles.obstacleTopLine,
+                        {
+                          backgroundColor: obstacleFlashActive
+                            ? theme.colors.accentPrimary
                             : theme.colors.warning,
                         },
                       ]}
                     />
+                    {/* Bottom accent line */}
                     <View
                       style={[
-                        styles.obstacleCore,
-                        {
-                          backgroundColor: theme.colors.surfaceSoft,
-                          borderColor: theme.colors.border,
-                        },
-                      ]}>
-                      <View style={styles.obstacleStripeRow}>
-                        <View
-                          style={[
-                            styles.obstacleStripe,
-                            { backgroundColor: theme.colors.accentSecondary },
-                          ]}
-                        />
-                        <View
-                          style={[
-                            styles.obstacleStripe,
-                            { backgroundColor: theme.colors.warning },
-                          ]}
-                        />
-                        <View
-                          style={[
-                            styles.obstacleStripe,
-                            { backgroundColor: theme.colors.accentSecondary },
-                          ]}
-                        />
-                      </View>
-                    </View>
-                    <View
-                      style={[
-                        styles.obstacleEdge,
-                        styles.obstacleEdgeBottom,
+                        styles.obstacleBottomLine,
                         {
                           backgroundColor: obstacleFlashActive
-                            ? theme.colors.warning
+                            ? theme.colors.accentPrimary
                             : theme.colors.accentSecondary,
                         },
                       ]}
@@ -538,114 +603,49 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                 );
               })}
 
-              <View
-                style={[
-                  styles.targetPiece,
-                  {
-                    backgroundColor: targetFlashActive ? targetFlashColor : theme.colors.accentPrimary,
-                    borderColor: targetFlashActive ? theme.colors.perfectHit : theme.colors.accentPrimary,
-                    height: targetHeight,
-                    left: session.target.x * stageSize.width - targetWidth / 2,
-                    top: session.target.y * stageSize.height - targetHeight / 2,
-                    transform: [{ scale: targetFlashActive ? targetFlashScale : 1 }],
-                    width: targetWidth,
-                  },
-                  targetFlashActive ? styles.targetPieceFlash : undefined,
-                  targetFlashActive ? theme.shadows.glow : theme.shadows.glow,
-                ]}>
-                <View
-                  style={[
-                    styles.targetInner,
-                    {
-                      backgroundColor: theme.colors.perfectHit,
-                    },
-                    targetFlashActive
-                      ? styles.targetInnerFlashActive
-                      : styles.targetInnerFlashIdle,
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.targetPerfectRing,
-                    {
-                      borderColor: theme.colors.perfectHit,
-                      height: perfectZoneSize,
-                      opacity: targetFlashActive ? 0.95 : 0.72,
-                      width: perfectZoneSize,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.targetPerfectCore,
-                    {
-                      backgroundColor: theme.colors.perfectHit,
-                      height: perfectZoneSize * 0.42,
-                      opacity: targetFlashActive ? 0.88 : 0.62,
-                      width: perfectZoneSize * 0.42,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.targetHighlight,
-                    {
-                      backgroundColor: theme.colors.backgroundPrimary,
-                    },
-                  ]}
-                />
-              </View>
+              <GameTarget
+                width={targetWidth}
+                height={targetHeight}
+                left={session.target.x * stageSize.width - targetWidth / 2}
+                top={session.target.y * stageSize.height - targetHeight / 2}
+                perfectZoneSize={perfectZoneSize}
+                isFlashing={targetFlashActive}
+                flashTone={session.visualFeedback.targetFlashTone ?? null}
+              />
 
-              <View
-                style={[
-                  styles.launcherPiece,
-                  {
-                    backgroundColor: theme.colors.surface,
-                    borderColor: theme.colors.accentPrimary,
-                    bottom:
-                      (1 - session.launcher.y) * stageSize.height - launcherHeight / 2,
-                    height: launcherHeight,
-                    left: session.launcher.x * stageSize.width - launcherWidth / 2,
-                    width: launcherWidth,
-                  },
-                ]}>
-                <View
-                  style={[
-                    styles.launcherCore,
-                    {
-                      backgroundColor: theme.colors.accentPrimary,
-                    },
-                  ]}
-                />
-                <View
-                  style={[
-                    styles.launcherCap,
-                    {
-                      backgroundColor: theme.colors.perfectHit,
-                    },
-                  ]}
-                />
-              </View>
-
-              {shouldShowReadyProjectile ? (
-                <View
-                  style={[
-                    styles.spawnPoint,
-                    {
-                      backgroundColor: theme.colors.perfectHit,
-                      borderColor: theme.colors.accentPrimary,
-                      bottom:
-                        (1 - session.launcher.y) * stageSize.height +
-                        launcherHeight / 2 +
-                        10,
-                      left: session.launcher.x * stageSize.width - projectileSize / 2,
-                    },
-                  ]}
-                />
-              ) : null}
+              <GameLauncher
+                width={launcherWidth}
+                height={launcherHeight}
+                left={session.launcher.x * stageSize.width - launcherWidth / 2}
+                bottom={(1 - session.launcher.y) * stageSize.height - launcherHeight / 2}
+                spawnPointLeft={session.launcher.x * stageSize.width - projectileSize / 2}
+                spawnPointBottom={
+                  (1 - session.launcher.y) * stageSize.height + launcherHeight / 2 + 10
+                }
+                spawnPointSize={projectileSize}
+                showReadyProjectile={shouldShowReadyProjectile}
+              />
 
               {session.projectile.isActive ? (
                 <>
+                  {/* Trail layer 1 — wide outer glow */}
+                  <View
+                    style={[
+                      styles.projectileTrail,
+                      {
+                        backgroundColor: theme.colors.goodHit,
+                        height: projectileTrailHeight,
+                        left:
+                          session.projectile.x * stageSize.width -
+                          (projectileTrailWidth * 1.4) / 2,
+                        opacity: 0.08,
+                        top:
+                          session.projectile.y * stageSize.height - projectileSize / 2,
+                        width: projectileTrailWidth * 1.4,
+                      },
+                    ]}
+                  />
+                  {/* Trail layer 2 — mid glow */}
                   <View
                     style={[
                       styles.projectileTrail,
@@ -654,28 +654,66 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                         height: projectileTrailHeight,
                         left:
                           session.projectile.x * stageSize.width - projectileTrailWidth / 2,
+                        opacity: 0.16,
                         top:
                           session.projectile.y * stageSize.height - projectileSize / 2,
                         width: projectileTrailWidth,
                       },
                     ]}
                   />
+                  {/* Trail layer 3 — bright core */}
                   <View
                     style={[
                       styles.projectileTrailGlow,
                       {
                         backgroundColor: theme.colors.perfectHit,
-                        height: projectileTrailHeight * 0.7,
+                        height: projectileTrailHeight * 0.85,
                         left:
                           session.projectile.x * stageSize.width -
-                          projectileTrailWidth * 0.32,
+                          (projectileTrailWidth * 0.55) / 2,
+                        opacity: 0.3,
                         top:
                           session.projectile.y * stageSize.height -
-                          projectileSize * 0.1,
-                        width: projectileTrailWidth * 0.64,
+                          projectileSize * 0.08,
+                        width: projectileTrailWidth * 0.55,
                       },
                     ]}
                   />
+                  {/* Trail layer 4 — hot white core */}
+                  <View
+                    style={[
+                      styles.projectileTrailGlow,
+                      {
+                        backgroundColor: '#FFFFFF',
+                        height: projectileTrailHeight * 0.6,
+                        left:
+                          session.projectile.x * stageSize.width -
+                          (projectileTrailWidth * 0.22) / 2,
+                        opacity: 0.42,
+                        top:
+                          session.projectile.y * stageSize.height,
+                        width: projectileTrailWidth * 0.22,
+                      },
+                    ]}
+                  />
+                  {/* Outer glow ring around projectile */}
+                  <View
+                    style={[
+                      styles.projectileGlowRing,
+                      {
+                        backgroundColor: theme.colors.accentPrimary,
+                        height: projectileSize * 1.8,
+                        left:
+                          session.projectile.x * stageSize.width -
+                          (projectileSize * 1.8) / 2,
+                        top:
+                          session.projectile.y * stageSize.height -
+                          (projectileSize * 1.8) / 2,
+                        width: projectileSize * 1.8,
+                      },
+                    ]}
+                  />
+                  {/* Projectile sphere */}
                   <View
                     style={[
                       styles.projectile,
@@ -695,6 +733,8 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
               ) : null}
             </>
           ) : null}
+
+          <ParticleExplosion pool={particlePool} />
 
           <View style={styles.launcherZone} />
         </Pressable>
@@ -924,47 +964,56 @@ const styles = StyleSheet.create({
   },
   projectileTrailGlow: {
     borderRadius: 999,
-    opacity: 0.2,
+    position: 'absolute',
+  },
+  projectileGlowRing: {
+    borderRadius: 999,
+    opacity: 0.22,
     position: 'absolute',
   },
   obstaclePiece: {
-    alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: 10,
     borderWidth: 2,
-    justifyContent: 'center',
     overflow: 'hidden',
     position: 'absolute',
   },
-  obstacleEdge: {
-    height: 3,
+  obstacleCrossContainer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  obstacleDiag1: {
+    borderRadius: 999,
+    height: 2,
+    left: '-20%',
+    position: 'absolute',
+    right: '-20%',
+    top: '50%',
+    transform: [{ rotate: '45deg' }],
+  },
+  obstacleDiag2: {
+    borderRadius: 999,
+    height: 2,
+    left: '-20%',
+    position: 'absolute',
+    right: '-20%',
+    top: '50%',
+    transform: [{ rotate: '-45deg' }],
+  },
+  obstacleTopLine: {
+    height: 2.5,
     left: 0,
-    opacity: 0.95,
     position: 'absolute',
     right: 0,
     top: 0,
   },
-  obstacleEdgeBottom: {
+  obstacleBottomLine: {
     bottom: 0,
-    top: 'auto',
-  },
-  obstacleCore: {
-    alignItems: 'center',
-    borderRadius: 10,
-    borderWidth: 1,
-    height: '72%',
-    justifyContent: 'center',
-    width: '88%',
-  },
-  obstacleStripeRow: {
-    flexDirection: 'row',
-    gap: 6,
-    width: '72%',
-  },
-  obstacleStripe: {
-    borderRadius: 999,
-    flex: 1,
-    height: 5,
-    opacity: 0.92,
+    height: 2.5,
+    left: 0,
+    position: 'absolute',
+    right: 0,
   },
   targetInnerFlashActive: {
     opacity: 0.9,

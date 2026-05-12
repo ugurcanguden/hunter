@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { LAYOUT } from '@centerhit-core/constants/layout';
@@ -23,6 +23,8 @@ export function CoreButton({
   compact = false,
 }: CoreButtonProps) {
   const { theme } = useTheme();
+  const pressScale = useRef(new Animated.Value(1)).current;
+
   const variantStyles = {
     primary: {
       backgroundColor: theme.colors.accentPrimary,
@@ -51,27 +53,54 @@ export function CoreButton({
     },
   }[variant];
 
+  const handlePressIn = () => {
+    Animated.spring(pressScale, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(pressScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 30,
+      bounciness: 4,
+    }).start();
+  };
+
   return (
     <Pressable
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       style={({ pressed }) => [
-        styles.button,
-        compact && styles.compactButton,
         {
-          backgroundColor: variantStyles.backgroundColor,
-          borderColor: variantStyles.borderColor,
-          opacity: disabled ? 0.5 : pressed ? 0.84 : 1,
+          opacity: disabled ? 0.5 : pressed ? 0.92 : 1,
         },
-        variant === 'primary' ? theme.shadows.glow : undefined,
         style,
       ]}>
-      <CoreText
-        variant={compact ? 'bodyStrong' : 'button'}
-        style={{ color: variantStyles.textColor }}>
-        {label}
-      </CoreText>
+      <Animated.View
+        style={[
+          styles.button,
+          compact && styles.compactButton,
+          {
+            backgroundColor: variantStyles.backgroundColor,
+            borderColor: variantStyles.borderColor,
+            transform: [{ scale: pressScale }],
+          },
+          variant === 'primary' ? theme.shadows.glow : undefined,
+        ]}>
+        <CoreText
+          variant={compact ? 'bodyStrong' : 'button'}
+          style={{ color: variantStyles.textColor }}>
+          {label}
+        </CoreText>
+      </Animated.View>
     </Pressable>
   );
 }
