@@ -12,6 +12,7 @@ type GameTargetProps = {
   perfectZoneSize: number;
   isFlashing: boolean;
   flashTone: 'perfect' | 'good' | null;
+  isVisible?: boolean;
 };
 
 export const GameTarget = memo(function GameTarget({
@@ -22,13 +23,16 @@ export const GameTarget = memo(function GameTarget({
   perfectZoneSize,
   isFlashing,
   flashTone,
+  isVisible = true,
 }: GameTargetProps) {
   const { theme } = useTheme();
 
   const breathScale = useRef(new Animated.Value(1)).current;
   const outerRotate = useRef(new Animated.Value(0)).current;
+  const visibilityOpacity = useRef(new Animated.Value(1)).current;
   const breathLoopRef = useRef<Animated.CompositeAnimation | null>(null);
   const isFlashingRef = useRef(false);
+  const prevVisibleRef = useRef(true);
 
   const startBreathing = useCallback(() => {
     breathLoopRef.current?.stop();
@@ -69,6 +73,18 @@ export const GameTarget = memo(function GameTarget({
   }, [outerRotate, startBreathing]);
 
   useEffect(() => {
+    if (isVisible === prevVisibleRef.current) {
+      return;
+    }
+    prevVisibleRef.current = isVisible;
+    Animated.timing(visibilityOpacity, {
+      toValue: isVisible ? 1 : 0,
+      duration: 80,
+      useNativeDriver: true,
+    }).start();
+  }, [isVisible, visibilityOpacity]);
+
+  useEffect(() => {
     if (isFlashing === isFlashingRef.current) {
       return;
     }
@@ -105,6 +121,7 @@ export const GameTarget = memo(function GameTarget({
       style={{
         height,
         left,
+        opacity: visibilityOpacity,
         position: 'absolute',
         top,
         transform: [{ scale: breathScale }],

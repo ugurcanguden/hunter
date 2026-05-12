@@ -611,6 +611,7 @@ export function GameScreen({ navigation, route }: ScreenProps<'Game'>) {
                 perfectZoneSize={perfectZoneSize}
                 isFlashing={targetFlashActive}
                 flashTone={session.visualFeedback.targetFlashTone ?? null}
+                isVisible={session.target.isVisible}
               />
 
               <GameLauncher

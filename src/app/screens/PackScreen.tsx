@@ -32,17 +32,23 @@ function PackLevelTile({
 }) {
   const { theme } = useTheme();
   const isCompleted = stars > 0;
+  const isBoss = level.levelType === 'boss';
   const tileStyle = {
-    backgroundColor: isCurrent
-      ? 'rgba(12, 67, 78, 0.72)'
-      : theme.colors.backgroundSecondary,
-    borderColor: isCurrent
-      ? theme.colors.accentPrimary
-      : !unlocked
-        ? theme.colors.borderSoft
-        : isCompleted
-          ? theme.colors.stageRing
-          : theme.colors.borderSoft,
+    backgroundColor: isBoss
+      ? 'rgba(78, 32, 12, 0.72)'
+      : isCurrent
+        ? 'rgba(12, 67, 78, 0.72)'
+        : theme.colors.backgroundSecondary,
+    borderColor: isBoss
+      ? theme.colors.warning
+      : isCurrent
+        ? theme.colors.accentPrimary
+        : !unlocked
+          ? theme.colors.borderSoft
+          : isCompleted
+            ? theme.colors.stageRing
+            : theme.colors.borderSoft,
+    borderWidth: isBoss ? 1.5 : 1,
   };
 
   return (
@@ -51,16 +57,24 @@ function PackLevelTile({
       disabled={!unlocked}
       onPress={onPress}
       style={({ pressed }) => [
-        styles.tilePressable,
+        isBoss ? styles.tilePressableFull : styles.tilePressable,
         { opacity: !unlocked ? 0.34 : pressed ? 0.88 : 1 },
       ]}>
       <View
         style={[
           styles.tile,
+          isBoss && styles.tileBoss,
           tileStyle,
           isCurrent ? theme.shadows.glow : theme.shadows.card,
         ]}>
-        {isCurrent ? (
+        {isBoss ? (
+          <View style={styles.tileBossBadge}>
+            <CoreIcon name="flame" size={14} color={theme.colors.warning} />
+            <CoreText variant="caption" style={[styles.tileCurrentText, { color: theme.colors.warning }]}>
+              BOSS
+            </CoreText>
+          </View>
+        ) : isCurrent ? (
           <View style={styles.tileCurrentBadge}>
             <CoreText variant="caption" colorRole="accentPrimary" style={styles.tileCurrentText}>
               PLAYING
@@ -74,7 +88,7 @@ function PackLevelTile({
           LVL {String(level.order).padStart(2, '0')}
         </CoreText>
 
-        <View style={styles.tileBody}>
+        <View style={isBoss ? styles.tileBodyBoss : styles.tileBody}>
           {unlocked ? (
             <>
               <View style={styles.tileStarsRow}>
@@ -82,8 +96,14 @@ function PackLevelTile({
                   <CoreIcon
                     key={`${level.id}-star-${index}`}
                     name="star"
-                    size={15}
-                    color={index < stars ? theme.colors.accentSecondary : theme.colors.border}
+                    size={isBoss ? 18 : 15}
+                    color={
+                      index < stars
+                        ? isBoss
+                          ? theme.colors.warning
+                          : theme.colors.accentSecondary
+                        : theme.colors.border
+                    }
                   />
                 ))}
               </View>
@@ -92,14 +112,18 @@ function PackLevelTile({
                 style={[
                   styles.tileIconCircle,
                   {
-                    backgroundColor: isCurrent
-                      ? theme.colors.accentPrimary
-                      : theme.colors.success,
+                    backgroundColor: isBoss
+                      ? theme.colors.warning
+                      : isCurrent
+                        ? theme.colors.accentPrimary
+                        : theme.colors.success,
+                    width: isBoss ? 64 : 56,
+                    height: isBoss ? 64 : 56,
                   },
                 ]}>
                 <CoreIcon
-                  name={isCurrent ? 'play' : isCompleted ? 'checkmark' : 'ellipse'}
-                  size={14}
+                  name={isBoss && !isCompleted ? 'flame' : isCurrent ? 'play' : isCompleted ? 'checkmark' : 'ellipse'}
+                  size={isBoss ? 18 : 14}
                   color={theme.colors.backgroundPrimary}
                 />
               </View>
@@ -378,6 +402,9 @@ const styles = StyleSheet.create({
   tilePressable: {
     width: '48.5%',
   },
+  tilePressableFull: {
+    width: '100%',
+  },
   tile: {
     alignItems: 'center',
     borderRadius: 28,
@@ -386,6 +413,24 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     paddingHorizontal: 10,
     paddingVertical: 14,
+  },
+  tileBoss: {
+    minHeight: 110,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  tileBodyBoss: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  tileBossBadge: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 8,
+    alignSelf: 'center',
   },
   tileCurrentBadge: {
     alignSelf: 'stretch',

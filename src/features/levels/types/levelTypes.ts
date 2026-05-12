@@ -1,8 +1,9 @@
 export type LevelId = string;
 export type LevelDifficulty = 'easy' | 'medium' | 'hard';
-export type MovementAxis = 'static' | 'horizontal';
+export type MovementAxis = 'static' | 'horizontal' | 'vertical' | 'diagonal';
 export type MovementBehavior = 'bounce' | 'loop';
 export type ObstacleType = 'blocker' | 'movingBlocker';
+export type LevelType = 'standard' | 'boss';
 
 export type LauncherConfig = {
   speed: number;
@@ -18,6 +19,11 @@ export type TargetConfig = {
   movementBehavior: MovementBehavior;
   moveRangePercent: number;
   heightScale?: number;
+  verticalSpeed?: number;
+  blink?: {
+    visibleMs: number;
+    hiddenMs: number;
+  };
 };
 
 export type BallConfig = {
@@ -47,6 +53,9 @@ export type ObstacleDefinition = {
   speed?: number;
   widthPercent?: number;
   heightPercent?: number;
+  movementAxis?: 'horizontal' | 'vertical';
+  movementBehavior?: 'bounce' | 'loop';
+  moveRangePercent?: number;
 };
 
 export type LevelDefinition = {
@@ -54,6 +63,7 @@ export type LevelDefinition = {
   order: number;
   title: string;
   difficulty: LevelDifficulty;
+  levelType?: LevelType;
   launcher: LauncherConfig;
   target: TargetConfig;
   ball: BallConfig;

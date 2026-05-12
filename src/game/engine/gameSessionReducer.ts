@@ -6,9 +6,10 @@ import { detectProjectileObstacleHit } from '@centerhit-game/systems/obstacleSys
 import {
   createProjectileFromLauncher,
   updateHorizontalLauncher,
-  updateHorizontalTarget,
+  updateTarget,
   updateProjectile,
 } from '@centerhit-game/systems/movementSystem';
+import { updateObstacles } from '@centerhit-game/systems/obstacleSystem';
 import {
   evaluateObjectiveProgress,
   getObjectiveFailReason,
@@ -115,13 +116,14 @@ export function gameSessionReducer(
       const deltaSeconds = event.deltaMs / 1000;
       const visualFeedback = decayVisualFeedback(state, event.deltaMs);
       const nextLauncher = updateHorizontalLauncher(state, deltaSeconds);
-      const nextTarget = updateHorizontalTarget(state.target, deltaSeconds);
+      const nextTarget = updateTarget(state.target, deltaSeconds);
+      const nextObstacles = updateObstacles(state.obstacles, deltaSeconds);
       const nextProjectile = updateProjectile(state.projectile, deltaSeconds);
       const expiredFeedback =
         state.feedback.until !== null && event.nowMs >= state.feedback.until;
       const obstacleHit = detectProjectileObstacleHit(
         nextProjectile.projectile,
-        state.obstacles,
+        nextObstacles,
       );
 
       if (obstacleHit) {
@@ -131,6 +133,7 @@ export function gameSessionReducer(
           failReason: null,
           launcher: nextLauncher,
           target: nextTarget,
+          obstacles: nextObstacles,
           projectile: {
             ...nextProjectile.projectile,
             isActive: false,
@@ -149,7 +152,9 @@ export function gameSessionReducer(
         });
       }
 
-      const hitResult = detectProjectileHit(nextProjectile.projectile, nextTarget);
+      const hitResult = nextTarget.isVisible
+        ? detectProjectileHit(nextProjectile.projectile, nextTarget)
+        : null;
 
       if (hitResult) {
         const score = calculateHitScore(hitResult.quality);
@@ -162,6 +167,7 @@ export function gameSessionReducer(
           failReason: null,
           launcher: nextLauncher,
           target: nextTarget,
+          obstacles: nextObstacles,
           projectile: {
             ...state.projectile,
             isActive: false,
@@ -199,6 +205,7 @@ export function gameSessionReducer(
           failReason: null,
           launcher: nextLauncher,
           target: nextTarget,
+          obstacles: nextObstacles,
           projectile: nextProjectile.projectile,
           canShoot: true,
           visualFeedback,
@@ -214,7 +221,7 @@ export function gameSessionReducer(
         ...state,
         launcher: nextLauncher,
         target: nextTarget,
-        obstacles: state.obstacles,
+        obstacles: nextObstacles,
         projectile: nextProjectile.projectile,
         canShoot: nextProjectile.canShoot,
         visualFeedback,
