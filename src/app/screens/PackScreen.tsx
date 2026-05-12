@@ -38,7 +38,9 @@ function PackLevelTile({
       ? 'rgba(78, 32, 12, 0.72)'
       : isCurrent
         ? 'rgba(12, 67, 78, 0.72)'
-        : theme.colors.backgroundSecondary,
+        : isCompleted
+          ? 'rgba(59, 227, 138, 0.06)'
+          : theme.colors.backgroundSecondary,
     borderColor: isBoss
       ? theme.colors.warning
       : isCurrent

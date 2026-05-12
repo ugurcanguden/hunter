@@ -6,6 +6,8 @@ import { CoreIcon } from '@centerhit-components/common/CoreIcon';
 import { CoreText } from '@centerhit-components/common/CoreText';
 import { useTheme } from '@centerhit-core/theme/useTheme';
 
+type CoverTone = 'cyan' | 'amber' | 'red' | 'mixed';
+
 type PackCardProps = {
   order: number;
   title: string;
@@ -15,6 +17,8 @@ type PackCardProps = {
   completed: boolean;
   expanded: boolean;
   highlighted?: boolean;
+  coverTone?: CoverTone;
+  completedCount?: number;
   onPress: () => void;
 };
 
@@ -27,9 +31,25 @@ export function PackCard({
   completed,
   expanded,
   highlighted = false,
+  coverTone,
+  completedCount = 0,
   onPress,
 }: PackCardProps) {
   const { theme } = useTheme();
+
+  function toneColor(tone: CoverTone | undefined) {
+    if (locked) return theme.colors.border;
+    switch (tone) {
+      case 'amber': return theme.colors.accentSecondary;
+      case 'red': return theme.colors.danger;
+      case 'mixed': return theme.colors.accentSecondary;
+      default: return theme.colors.accentPrimary;
+    }
+  }
+
+  const accent = toneColor(coverTone);
+  const completionRatio = levelCount > 0 ? completedCount / levelCount : 0;
+  const showProgressBar = !locked && !completed;
 
   return (
     <Pressable
@@ -40,26 +60,19 @@ export function PackCard({
       <CoreCard
         style={[
           styles.card,
+          !locked && {
+            borderColor: accent,
+            borderWidth: 1.5,
+          },
           highlighted && {
-            borderColor: theme.colors.accentPrimary,
             backgroundColor: theme.colors.stageGlow,
           },
-          completed && !highlighted && {
-            borderColor: theme.colors.success,
-          },
         ]}>
+        {/* Accent bar */}
         <View
           style={[
             styles.accentLine,
-            {
-              backgroundColor: locked
-                ? theme.colors.border
-                : highlighted
-                  ? theme.colors.accentPrimary
-                  : completed
-                    ? theme.colors.success
-                    : theme.colors.borderSoft,
-            },
+            { backgroundColor: accent },
           ]}
         />
 
@@ -68,7 +81,7 @@ export function PackCard({
             <CoreText variant="caption" colorRole="textSecondary" style={styles.kicker}>
               PACK {order.toString().padStart(2, '0')}
             </CoreText>
-            <CoreText variant="caption" colorRole="accentPrimary" style={styles.levelCount}>
+            <CoreText variant="caption" style={[styles.levelCount, { color: accent }]}>
               {levelCount} LVL
             </CoreText>
           </View>
@@ -78,11 +91,7 @@ export function PackCard({
               {
                 borderColor: locked
                   ? theme.colors.border
-                  : highlighted
-                    ? theme.colors.accentPrimary
-                    : completed
-                      ? theme.colors.success
-                      : theme.colors.border,
+                  : accent,
                 backgroundColor: locked
                   ? theme.colors.backgroundSecondary
                   : highlighted
@@ -95,16 +104,16 @@ export function PackCard({
             ) : null}
             <CoreText
               variant="caption"
-              colorRole={
-                locked
-                  ? 'warning'
-                  : highlighted
-                    ? 'accentPrimary'
+              style={[
+                styles.statusText,
+                {
+                  color: locked
+                    ? theme.colors.warning
                     : completed
-                      ? 'success'
-                      : 'textSecondary'
-              }
-              style={styles.statusText}>
+                      ? theme.colors.success
+                      : accent,
+                },
+              ]}>
               {locked ? 'LOCKED' : highlighted ? 'NEXT' : expanded ? 'OPEN' : 'READY'}
             </CoreText>
           </View>
@@ -116,9 +125,8 @@ export function PackCard({
 
         <CoreText
           variant="body"
-          colorRole={locked ? 'textSecondary' : 'accentPrimary'}
-          numberOfLines={1}
-          style={styles.subtitle}>
+          style={[styles.subtitle, { color: locked ? theme.colors.textSecondary : accent }]}
+          numberOfLines={1}>
           {subtitle ?? `${levelCount} levels ready`}
         </CoreText>
 
@@ -131,20 +139,49 @@ export function PackCard({
               {locked ? 'Locked' : completed ? 'Completed' : highlighted ? 'Next Up' : 'Open'}
             </CoreText>
           </View>
-          <CoreIcon
-            name={locked ? 'lock-closed' : highlighted ? 'play' : completed ? 'checkmark' : 'ellipse'}
-            size={17}
-            color={
-              locked
-                ? theme.colors.textSecondary
-                : highlighted
-                  ? theme.colors.accentPrimary
-                  : completed
-                    ? theme.colors.success
-                    : theme.colors.textPrimary
-            }
-          />
+          <View style={styles.footerRight}>
+            {!locked && (
+              <CoreText variant="caption" style={[styles.starCount, { color: theme.colors.warning }]}>
+                ★ {completedCount}/{levelCount}
+              </CoreText>
+            )}
+            <CoreIcon
+              name={locked ? 'lock-closed' : highlighted ? 'play' : completed ? 'checkmark' : 'ellipse'}
+              size={17}
+              color={
+                locked
+                  ? theme.colors.textSecondary
+                  : highlighted
+                    ? accent
+                    : completed
+                      ? theme.colors.success
+                      : theme.colors.textPrimary
+              }
+            />
+          </View>
         </View>
+
+        {/* Progress bar */}
+        {showProgressBar && (
+          <View style={[styles.progressTrack, { backgroundColor: theme.colors.overlay }]}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  backgroundColor: accent,
+                  width: `${completionRatio * 100}%`,
+                },
+              ]}
+            />
+          </View>
+        )}
+        {completed && (
+          <View style={[styles.progressTrack, { backgroundColor: theme.colors.overlay }]}>
+            <View
+              style={[styles.progressFill, { backgroundColor: theme.colors.success, width: '100%' }]}
+            />
+          </View>
+        )}
       </CoreCard>
     </Pressable>
   );
@@ -155,17 +192,18 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     overflow: 'hidden',
     paddingHorizontal: 18,
-    paddingVertical: 18,
+    paddingTop: 18,
+    paddingBottom: 14,
     position: 'relative',
   },
   accentLine: {
-    borderBottomLeftRadius: 28,
-    borderTopLeftRadius: 28,
+    borderBottomRightRadius: 8,
+    borderTopRightRadius: 8,
     bottom: 0,
     left: 0,
     position: 'absolute',
     top: 0,
-    width: 4,
+    width: 8,
   },
   row: {
     flexDirection: 'row',
@@ -180,6 +218,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   levelCount: {
+    fontSize: 13,
+    fontWeight: '600',
     letterSpacing: 0.8,
   },
   statusPill: {
@@ -192,6 +232,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   statusText: {
+    fontSize: 13,
+    fontWeight: '600',
     letterSpacing: 0.8,
   },
   title: {
@@ -204,13 +246,35 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     letterSpacing: 0.8,
     textTransform: 'uppercase',
+    fontSize: 13,
   },
   footerRow: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
   footerMetric: {
     gap: 4,
+  },
+  footerRight: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  starCount: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+  },
+  progressTrack: {
+    borderRadius: 999,
+    height: 3,
+    overflow: 'hidden',
+    opacity: 0.7,
+  },
+  progressFill: {
+    borderRadius: 999,
+    height: '100%',
   },
 });

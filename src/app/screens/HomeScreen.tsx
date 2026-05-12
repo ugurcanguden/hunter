@@ -86,20 +86,20 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
     ]).start();
   }, [titleOpacity, titleScale]);
 
-  // Featured card accent pulse
-  const accentOpacity = useRef(new Animated.Value(0.6)).current;
+  // Featured card pulse (border glow)
+  const borderPulse = useRef(new Animated.Value(0.5)).current;
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(accentOpacity, {
+        Animated.timing(borderPulse, {
           toValue: 1,
-          duration: 1000,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(accentOpacity, {
-          toValue: 0.6,
-          duration: 1000,
+        Animated.timing(borderPulse, {
+          toValue: 0.5,
+          duration: 1200,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
@@ -107,7 +107,30 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
     );
     loop.start();
     return () => loop.stop();
-  }, [accentOpacity]);
+  }, [borderPulse]);
+
+  // Pulse dot scale
+  const pulseDot = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseDot, {
+          toValue: 1.5,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseDot, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [pulseDot]);
 
   // Primary button shimmer
   const shimmerX = useRef(new Animated.Value(-200)).current;
@@ -196,7 +219,7 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
         <View
           style={[
             styles.headerInfoButton,
-            { backgroundColor: theme.colors.surface, borderColor: theme.colors.border },
+            { backgroundColor: theme.colors.surface, borderColor: theme.colors.accentPrimary },
           ]}>
           <CoreIcon name="play" size={20} color={theme.colors.accentPrimary} />
         </View>
@@ -209,13 +232,26 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
           style={styles.subtitle}>
           {t.home.readyToContinue}
         </CoreText>
-        <CoreCard variant="soft" style={styles.featuredCard}>
+
+        {/* Featured card — glow border + pulse dot */}
+        <CoreCard
+          variant="soft"
+          style={[
+            styles.featuredCard,
+            { borderColor: theme.colors.accentPrimary, borderWidth: 1.5 },
+          ]}>
+          {/* Pulse dot — live indicator */}
           <Animated.View
+            pointerEvents="none"
             style={[
-              styles.featuredAccent,
-              { backgroundColor: theme.colors.accentPrimary, opacity: accentOpacity },
+              styles.pulseDot,
+              {
+                backgroundColor: theme.colors.accentPrimary,
+                transform: [{ scale: pulseDot }],
+              },
             ]}
           />
+
           <View style={styles.featuredTop}>
             <CoreText variant="caption" colorRole="textSecondary">
               {t.home.lastOpenedLevel.toUpperCase()}
@@ -275,53 +311,80 @@ export function HomeScreen({ navigation }: ScreenProps<'Home'>) {
           {t.home.campaignProgress}
         </CoreText>
         <View style={styles.summaryGrid}>
+          {/* Total Stars */}
           <CoreCard variant="soft" style={styles.summaryCard}>
-            <CoreText variant="caption" colorRole="textSecondary">
-              {t.home.totalStars}
-            </CoreText>
-            <View style={styles.summaryValueRow}>
-              <CoreText variant="title">{progress.totalStars}</CoreText>
+            <View style={styles.summaryIconRow}>
               <CoreIcon name="star" size={16} color={theme.colors.warning} />
-            </View>
-          </CoreCard>
-          <CoreCard variant="soft" style={styles.summaryCard}>
-            <CoreText variant="caption" colorRole="textSecondary">
-              {t.home.unlockedLevels}
-            </CoreText>
-            <View style={styles.summaryValueRow}>
-              <CoreText variant="title">
-                {unlockedCount}/{levels.length}
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.home.totalStars}
               </CoreText>
-              <CoreIcon name="lock-open" size={16} color={theme.colors.accentPrimary} />
             </View>
-          </CoreCard>
-          <CoreCard variant="soft" style={styles.summaryCard}>
-            <CoreText variant="caption" colorRole="textSecondary">
-              {t.home.currentPack}
+            <CoreText variant="title" style={styles.summaryValue}>
+              {progress.totalStars}
             </CoreText>
-            <CoreText variant="subtitle" numberOfLines={1}>
+          </CoreCard>
+
+          {/* Unlocked Levels */}
+          <CoreCard variant="soft" style={styles.summaryCard}>
+            <View style={styles.summaryIconRow}>
+              <CoreIcon name="lock-open" size={16} color={theme.colors.accentPrimary} />
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.home.unlockedLevels}
+              </CoreText>
+            </View>
+            <CoreText variant="title" style={styles.summaryValue}>
+              {unlockedCount}/{levels.length}
+            </CoreText>
+          </CoreCard>
+
+          {/* Current Pack */}
+          <CoreCard variant="soft" style={styles.summaryCard}>
+            <View style={styles.summaryIconRow}>
+              <CoreIcon name="play" size={16} color={theme.colors.accentPrimary} />
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.home.currentPack}
+              </CoreText>
+            </View>
+            <CoreText variant="subtitle" numberOfLines={1} style={styles.summaryValue}>
               {currentPack?.title ?? 'Starter Circuit'}
             </CoreText>
           </CoreCard>
+
+          {/* Last Opened Level */}
           <CoreCard variant="soft" style={styles.summaryCard}>
-            <CoreText variant="caption" colorRole="textSecondary">
-              {t.home.lastOpenedLevel}
-            </CoreText>
-            <CoreText variant="subtitle" numberOfLines={1}>
+            <View style={styles.summaryIconRow}>
+              <CoreIcon name="ellipse" size={16} color={theme.colors.textSecondary} />
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.home.lastOpenedLevel}
+              </CoreText>
+            </View>
+            <CoreText variant="subtitle" numberOfLines={1} style={styles.summaryValue}>
               {lastLevel?.title ?? 'Level 1'}
             </CoreText>
           </CoreCard>
+
+          {/* Best Score */}
           <CoreCard variant="soft" style={styles.summaryCard}>
-            <CoreText variant="caption" colorRole="textSecondary">
-              {t.home.bestScore}
+            <View style={styles.summaryIconRow}>
+              <CoreIcon name="star" size={16} color={theme.colors.accentSecondary} />
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.home.bestScore}
+              </CoreText>
+            </View>
+            <CoreText variant="subtitle" style={styles.summaryValue}>
+              {formatScore(progress.bestScore)}
             </CoreText>
-            <CoreText variant="subtitle">{formatScore(progress.bestScore)}</CoreText>
           </CoreCard>
+
+          {/* Next Pack */}
           <CoreCard variant="soft" style={styles.summaryCard}>
-            <CoreText variant="caption" colorRole="textSecondary">
-              {t.home.nextPack}
-            </CoreText>
-            <CoreText variant="subtitle" numberOfLines={1}>
+            <View style={styles.summaryIconRow}>
+              <CoreIcon name="lock-closed" size={16} color={theme.colors.border} />
+              <CoreText variant="caption" colorRole="textSecondary">
+                {t.home.nextPack}
+              </CoreText>
+            </View>
+            <CoreText variant="subtitle" numberOfLines={1} style={styles.summaryValue}>
               {nextPack?.title ?? `${unlockedPackCount} ${t.levels.packsUnlocked}`}
             </CoreText>
           </CoreCard>
@@ -342,20 +405,10 @@ const styles = StyleSheet.create({
     paddingBottom: 28,
     position: 'relative',
   },
-  featuredAccent: {
-    borderBottomLeftRadius: 32,
-    borderTopLeftRadius: 32,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-    top: 0,
-    width: 5,
-  },
   featuredCard: {
     borderRadius: 28,
     marginTop: 6,
     overflow: 'hidden',
-    paddingLeft: 20,
     position: 'relative',
   },
   featuredContinueButton: {
@@ -375,6 +428,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  pulseDot: {
+    borderRadius: 999,
+    height: 8,
+    position: 'absolute',
+    right: 18,
+    top: 18,
+    width: 8,
   },
   gridLineHorizontal: {
     height: 1,
@@ -399,7 +460,7 @@ const styles = StyleSheet.create({
   headerInfoButton: {
     alignItems: 'center',
     borderRadius: 25,
-    borderWidth: 1,
+    borderWidth: 1.5,
     height: 50,
     justifyContent: 'center',
     width: 50,
@@ -463,8 +524,8 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flexBasis: '47%',
-    minHeight: 102,
-    paddingVertical: 16,
+    minHeight: 94,
+    paddingVertical: 14,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -476,10 +537,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     textTransform: 'uppercase',
   },
-  summaryValueRow: {
+  summaryIconRow: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 10,
+    gap: 6,
+    marginBottom: 8,
+  },
+  summaryValue: {
+    marginTop: 2,
   },
 });
