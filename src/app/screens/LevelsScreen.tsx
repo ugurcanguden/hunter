@@ -31,6 +31,7 @@ export function LevelsScreen({ navigation }: ScreenProps<'Levels'>) {
   const levels = levelService.getAllLevels();
   const progress = useProgressStore(state => state.progress);
   const isPackUnlocked = useProgressStore(state => state.isPackUnlocked);
+  const getLevelStars = useProgressStore(state => state.getLevelStars);
   const nextPlayableLevelId = resolvePlayableLevelId(progress, levels);
   const nextPack = resolveNextUnlockablePack(progress, packs);
   const unlockedPackCount = progress.unlockedPackIds.length;
@@ -152,6 +153,8 @@ export function LevelsScreen({ navigation }: ScreenProps<'Levels'>) {
           const packUnlocked = isPackUnlocked(pack.packId);
           const completed = isPackCompleted(progress, pack, packLevels);
 
+          const completedCount = packLevels.filter(l => getLevelStars(l.id) > 0).length;
+
           return (
             <View key={pack.packId} style={styles.packSection}>
               <PackCard
@@ -163,6 +166,8 @@ export function LevelsScreen({ navigation }: ScreenProps<'Levels'>) {
                 completed={completed}
                 expanded={false}
                 highlighted={nextPack?.packId === pack.packId}
+                coverTone={pack.coverTone}
+                completedCount={completedCount}
                 onPress={() => {
                   if (!packUnlocked) {
                     return;

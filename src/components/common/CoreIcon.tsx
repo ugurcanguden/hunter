@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   Circle,
+  Flame,
   Globe,
   Heart,
   Info,
@@ -38,7 +39,8 @@ export type CoreIconName =
   | 'phone-portrait-outline'
   | 'notifications-outline'
   | 'globe-outline'
-  | 'warning-outline';
+  | 'warning-outline'
+  | 'flame';
 
 type CoreIconProps = {
   name: CoreIconName;
@@ -84,6 +86,8 @@ export function CoreIcon({ name, size = 20, color }: CoreIconProps) {
       return <Globe size={size} color={color} strokeWidth={2.2} />;
     case 'warning-outline':
       return <TriangleAlert size={size} color={color} strokeWidth={2.2} />;
+    case 'flame':
+      return <Flame size={size} color={color} strokeWidth={2.2} />;
     default:
       return <Circle size={size} color={color} strokeWidth={2.2} />;
   }

@@ -38,17 +38,24 @@ function createLauncherState(level: LevelDefinition): LauncherState {
 }
 
 function createTargetState(level: LevelDefinition): TargetState {
+  const blinkVisibleMs = level.target.blink?.visibleMs ?? 0;
   return {
     x: 0.5,
     y: gameDefaults.targetYPercent,
     direction: 1,
+    yDirection: 1,
     width: gameDefaults.targetBaseWidthPercent * level.target.size,
     height: gameDefaults.targetHeightPercent * (level.target.heightScale ?? 1),
     size: level.target.size,
     speed: gameDefaults.targetSpeedUnitPerSecond * level.target.speed,
+    verticalSpeed: gameDefaults.targetSpeedUnitPerSecond * (level.target.verticalSpeed ?? level.target.speed),
     movementAxis: level.target.movementAxis,
     movementBehavior: level.target.movementBehavior,
     moveRangePercent: level.target.moveRangePercent,
+    isVisible: true,
+    blinkVisibleMs,
+    blinkHiddenMs: level.target.blink?.hiddenMs ?? 0,
+    blinkTimerMs: blinkVisibleMs,
   };
 }
 

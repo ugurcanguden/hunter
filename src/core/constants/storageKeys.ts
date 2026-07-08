@@ -4,4 +4,6 @@ export const STORAGE_KEYS = {
   campaignPacks: 'centerhit.campaign-packs-cache',
   campaignPackLevels: 'centerhit.campaign-pack-levels-cache',
   feedbackDailyCounter: 'centerhit.feedback-daily-counter',
+  activeEventCache: 'centerhit.active-event-cache',
+  enteredEventIds: 'centerhit.entered-event-ids',
 } as const;

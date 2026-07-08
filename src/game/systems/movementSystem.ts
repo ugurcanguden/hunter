@@ -5,7 +5,7 @@ function clampCenter(position: number, halfSize: number, min: number, max: numbe
   return Math.min(Math.max(position, min + halfSize), max - halfSize);
 }
 
-function updateBouncePosition(
+export function updateBouncePosition(
   position: number,
   direction: -1 | 1,
   speed: number,
@@ -13,7 +13,7 @@ function updateBouncePosition(
   min: number,
   max: number,
   halfSize: number,
-) {
+): { position: number; direction: -1 | 1 } {
   let nextPosition = position + direction * speed * deltaSeconds;
   let nextDirection = direction;
 
@@ -27,18 +27,18 @@ function updateBouncePosition(
 
   return {
     position: nextPosition,
-    direction: nextDirection,
+    direction: nextDirection as -1 | 1,
   };
 }
 
-function updateLoopPosition(
+export function updateLoopPosition(
   position: number,
   speed: number,
   deltaSeconds: number,
   min: number,
   max: number,
   halfSize: number,
-) {
+): number {
   let nextPosition = position + speed * deltaSeconds;
 
   if (nextPosition > max - halfSize) {
@@ -48,41 +48,101 @@ function updateLoopPosition(
   return nextPosition;
 }
 
-export function updateHorizontalTarget(
-  target: TargetState,
-  deltaSeconds: number,
-): TargetState {
-  if (target.movementAxis === 'static') {
+const TARGET_VERTICAL_MIN = 0.10;
+const TARGET_VERTICAL_MAX = 0.36;
+
+function updateBlinkState(target: TargetState, deltaMs: number): TargetState {
+  if (target.blinkVisibleMs === 0) {
     return target;
   }
 
-  const halfWidth = target.width / 2;
-  const min = 0.5 - target.moveRangePercent;
-  const max = 0.5 + target.moveRangePercent;
-
-  if (target.movementBehavior === 'loop') {
-    return {
-      ...target,
-      x: updateLoopPosition(target.x, target.speed, deltaSeconds, min, max, halfWidth),
-      direction: 1,
-    };
+  const nextTimer = target.blinkTimerMs - deltaMs;
+  if (nextTimer > 0) {
+    return { ...target, blinkTimerMs: nextTimer };
   }
 
-  const next = updateBouncePosition(
-    target.x,
-    target.direction,
-    target.speed,
-    deltaSeconds,
-    min,
-    max,
-    halfWidth,
-  );
-
+  const nextVisible = !target.isVisible;
   return {
     ...target,
-    x: next.position,
-    direction: next.direction,
+    isVisible: nextVisible,
+    blinkTimerMs: nextVisible ? target.blinkVisibleMs : target.blinkHiddenMs,
   };
+}
+
+export function updateTarget(target: TargetState, deltaSeconds: number): TargetState {
+  const deltaMs = deltaSeconds * 1000;
+
+  switch (target.movementAxis) {
+    case 'static':
+      return updateBlinkState(target, deltaMs);
+
+    case 'horizontal': {
+      const halfWidth = target.width / 2;
+      const min = 0.5 - target.moveRangePercent;
+      const max = 0.5 + target.moveRangePercent;
+
+      let updated: TargetState;
+      if (target.movementBehavior === 'loop') {
+        updated = {
+          ...target,
+          x: updateLoopPosition(target.x, target.speed, deltaSeconds, min, max, halfWidth),
+          direction: 1,
+        };
+      } else {
+        const next = updateBouncePosition(target.x, target.direction, target.speed, deltaSeconds, min, max, halfWidth);
+        updated = { ...target, x: next.position, direction: next.direction };
+      }
+      return updateBlinkState(updated, deltaMs);
+    }
+
+    case 'vertical': {
+      const halfHeight = target.height / 2;
+      const next = updateBouncePosition(
+        target.y,
+        target.yDirection,
+        target.verticalSpeed,
+        deltaSeconds,
+        TARGET_VERTICAL_MIN,
+        TARGET_VERTICAL_MAX,
+        halfHeight,
+      );
+      return updateBlinkState(
+        { ...target, y: next.position, yDirection: next.direction },
+        deltaMs,
+      );
+    }
+
+    case 'diagonal': {
+      const halfWidth = target.width / 2;
+      const halfHeight = target.height / 2;
+      const hMin = 0.5 - target.moveRangePercent;
+      const hMax = 0.5 + target.moveRangePercent;
+
+      const hNext = updateBouncePosition(target.x, target.direction, target.speed, deltaSeconds, hMin, hMax, halfWidth);
+      const vNext = updateBouncePosition(
+        target.y,
+        target.yDirection,
+        target.verticalSpeed,
+        deltaSeconds,
+        TARGET_VERTICAL_MIN,
+        TARGET_VERTICAL_MAX,
+        halfHeight,
+      );
+
+      return updateBlinkState(
+        { ...target, x: hNext.position, direction: hNext.direction, y: vNext.position, yDirection: vNext.direction },
+        deltaMs,
+      );
+    }
+
+    default:
+      return updateBlinkState(target, deltaMs);
+  }
+}
+
+// Keep old export for any direct imports elsewhere
+export function updateHorizontalTarget(target: TargetState, deltaSeconds: number): TargetState {
+  return updateTarget(target, deltaSeconds);
 }
 
 export function updateHorizontalLauncher(

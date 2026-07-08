@@ -53,17 +53,26 @@ export type LauncherState = {
   height: number;
 };
 
+export type TargetMovementAxis = 'static' | 'horizontal' | 'vertical' | 'diagonal';
+export type TargetMovementBehavior = 'bounce' | 'loop';
+
 export type TargetState = {
   x: number;
   y: number;
   direction: -1 | 1;
+  yDirection: -1 | 1;
   width: number;
   height: number;
   size: number;
   speed: number;
-  movementAxis: 'static' | 'horizontal';
-  movementBehavior: 'bounce' | 'loop';
+  verticalSpeed: number;
+  movementAxis: TargetMovementAxis;
+  movementBehavior: TargetMovementBehavior;
   moveRangePercent: number;
+  isVisible: boolean;
+  blinkVisibleMs: number;
+  blinkHiddenMs: number;
+  blinkTimerMs: number;
 };
 
 export type BallState = {
@@ -79,13 +88,23 @@ export type ProjectileState = {
   isActive: boolean;
 };
 
+export type ObstacleMovementAxis = 'horizontal' | 'vertical' | 'none';
+export type ObstacleMovementBehavior = 'bounce' | 'loop';
+
 export type ObstacleState = {
   id: string;
-  type: 'blocker';
+  type: 'blocker' | 'movingBlocker';
   x: number;
   y: number;
+  initialX: number;
+  initialY: number;
   width: number;
   height: number;
+  speed: number;
+  direction: -1 | 1;
+  movementAxis: ObstacleMovementAxis;
+  movementBehavior: ObstacleMovementBehavior;
+  moveRangePercent: number;
 };
 
 export type GameSessionState = {

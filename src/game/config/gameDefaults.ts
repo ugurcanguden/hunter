@@ -36,7 +36,7 @@ export const gameDefaults = {
   objectiveMetaGap: 4,
   stageNoteMarginTop: 14,
   objectiveFooterPaddingBottom: 8,
-  projectileTrailStretch: 2.8,
+  projectileTrailStretch: 4.2,
   projectileTrailWidthFactor: 0.85,
   trailDurationMs: 180,
   hudAnimationDurationMs: 220,

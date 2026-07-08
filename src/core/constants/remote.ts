@@ -5,4 +5,6 @@ export const POCKETBASE_COLLECTIONS = {
   packs: 'campaign_packs',
   levels: 'campaign_levels',
   feedback: 'app_feedback',
+  events: 'events',
+  eventEntries: 'event_entries',
 } as const;
