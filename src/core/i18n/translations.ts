@@ -146,6 +146,24 @@ type TranslationTree = {
   loader: {
     preparing: string;
   };
+  event: {
+    joinTitle: string;
+    prize: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    submit: string;
+    submitting: string;
+    skip: string;
+    successTitle: string;
+    successMessage: string;
+    successDone: string;
+    errorTitle: string;
+    errorMessage: string;
+    validationNameRequired: string;
+    validationPhoneInvalid: string;
+  };
   game: {
     gameplaySkeletonReady: string;
     gameplaySkeletonSubtitle: string;
