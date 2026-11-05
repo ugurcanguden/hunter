@@ -753,7 +753,7 @@ const advancedLevelsBase: readonly LevelDefinition[] = [
     objective: { requiredHits: 11, requiredPerfectHits: 4, maxMissAllowed: 2, maxShots: 14 },
     stars: { oneStarScore: 1020, twoStarScore: 1240, threeStarScore: 1450 },
     obstacles: [
-      { id: 'obs-17-a', type: 'blocker', xPercent: 0.5, yPercent: 0.55, widthPercent: 0.12, heightPercent: 0.034 },
+      { id: 'obs-17-a', type: 'blocker', xPercent: 0.24, yPercent: 0.55, widthPercent: 0.12, heightPercent: 0.034 },
     ],
   },
   {
